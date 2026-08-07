@@ -1,7 +1,7 @@
 {
   "name": "englishup",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "Ứng dụng học tiếng Anh thông minh từ A0 đến B1",
   "scripts": {
@@ -13,6 +13,9 @@
     "cap:android": "npm run build && npx cap sync android && npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-avatar": "^1.2.6",
     "@radix-ui/react-dialog": "^1.1.23",
