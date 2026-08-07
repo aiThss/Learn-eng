@@ -48,6 +48,7 @@ function getModel(): GenerativeModel | null {
   
   if (!genAI) {
     genAI = new GoogleGenerativeAI(apiKey)
+    // Dùng gemini-1.5-flash chuẩn Google API
     model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
   }
   
