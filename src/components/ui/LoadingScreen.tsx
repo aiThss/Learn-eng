@@ -22,9 +22,11 @@ export default function LoadingScreen({ className }: LoadingScreenProps) {
         <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-2xl scale-150 animate-pulse" />
 
         {/* Logo chữ E với gradient */}
-        <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl shadow-indigo-500/40 animate-[bounce_2s_ease-in-out_infinite]">
-          <span className="text-5xl font-black text-white select-none">E</span>
-        </div>
+        <img
+          src="/lumina-logo.png"
+          alt="Lumina"
+          className="relative h-24 w-24 rounded-3xl object-cover shadow-card animate-[bounce_2s_ease-in-out_infinite]"
+        />
       </div>
 
       {/* Tên app với gradient */}

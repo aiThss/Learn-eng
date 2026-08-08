@@ -9,19 +9,19 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['lumina-logo.png'],
       manifest: {
         name: 'EnglishUp - Học tiếng Anh',
         short_name: 'EnglishUp',
         description: 'Ứng dụng học tiếng Anh từ A0 đến B1 với AI',
-        theme_color: '#2563eb',
-        background_color: '#0f172a',
+        theme_color: '#f4f6f8',
+        background_color: '#f4f6f8',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
         icons: [
-          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: 'lumina-logo.png', sizes: '2048x2048', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {

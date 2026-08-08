@@ -84,8 +84,10 @@ export default function TopBar() {
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm font-semibold">
-            {user?.avatar && !avatarIsImage ? user.avatar : user?.name?.[0] ?? 'E'}
+          <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center overflow-hidden text-white text-sm font-semibold">
+            {user?.avatar && !avatarIsImage ? user.avatar : user?.name?.[0] ?? (
+              <img src="/lumina-logo.png" alt="Lumina" className="h-full w-full object-cover" />
+            )}
           </div>
         )}
       </div>

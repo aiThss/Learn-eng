@@ -111,9 +111,11 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       {/* Logo */}
       <div className="relative mb-8">
         <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-2xl scale-150" />
-        <div className="relative w-28 h-28 rounded-[2rem] bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl shadow-indigo-500/40">
-          <span className="text-6xl font-black text-white">E</span>
-        </div>
+        <img
+          src="/lumina-logo.png"
+          alt="Lumina"
+          className="relative h-28 w-28 rounded-[2rem] object-cover shadow-card"
+        />
       </div>
 
       <h1 className="text-4xl font-black text-white mb-3 tracking-tight">EnglishUp</h1>
