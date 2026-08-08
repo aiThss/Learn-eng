@@ -4,6 +4,7 @@
  */
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai'
 import { PROMPTS } from './prompts'
+import { useSettingsStore } from '@/store'
 
 // Rate limiter: tối đa 10 requests/phút
 class RateLimiter {
@@ -39,17 +40,20 @@ const rateLimiter = new RateLimiter(10, 60000)
 // Khởi tạo Gemini client (lazy)
 let genAI: GoogleGenerativeAI | null = null
 let model: GenerativeModel | null = null
+let modelApiKey = ''
 
 function getModel(): GenerativeModel | null {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+  // Ưu tiên biến môi trường khi phát hành. Khóa người dùng tự nhập chỉ nằm cục bộ
+  // để nút kiểm tra kết nối và các tính năng AI hoạt động nhất quán.
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || useSettingsStore.getState().settings.geminiApiKey
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
     return null
   }
   
-  if (!genAI) {
+  if (!genAI || modelApiKey !== apiKey) {
     genAI = new GoogleGenerativeAI(apiKey)
-    // Dùng gemini-1.5-flash chuẩn Google API
-    model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    modelApiKey = apiKey
+    model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
   }
   
   return model

@@ -22,12 +22,13 @@ const PAGE_TITLES: Record<string, string> = {
   '/ai-tutor': 'AI Tutor',
   '/settings': 'Cài đặt',
   '/review': 'Ôn tập',
+  '/download': 'Tải Android',
 }
 
 // Trang có nút back
 const BACK_PAGES = [
   '/roadmap', '/lesson/today', '/grammar', '/listening',
-  '/speaking', '/reading-writing', '/review',
+  '/speaking', '/reading-writing', '/review', '/download',
 ]
 
 export default function TopBar() {
@@ -42,36 +43,49 @@ export default function TopBar() {
   const streak = progress?.currentStreak ?? 0
   const xp = progress?.totalXP ?? 0
 
+  const handleBack = () => {
+    // Với deep link hoặc khi Android mở lại app, history có thể không có trang trước.
+    // Luôn đưa người học về Dashboard thay vì rời khỏi ứng dụng.
+    const historyIndex = window.history.state?.idx
+    if (typeof historyIndex === 'number' && historyIndex > 0) {
+      navigate(-1)
+      return
+    }
+    navigate('/', { replace: true })
+  }
+
+  const avatarIsImage = Boolean(user?.avatar && /^(https?:|data:image\/)/.test(user.avatar))
+
   return (
     <header
       className={cn(
         'fixed top-0 left-1/2 -translate-x-1/2',
-        'w-full max-w-md h-14',
+        'w-full max-w-2xl min-h-[3.5rem] h-[calc(3.5rem+env(safe-area-inset-top))]',
         'bg-background/95 backdrop-blur-md border-b border-border',
-        'flex items-center justify-between px-4',
-        'z-40 safe-top'
+        'grid grid-cols-[1fr_auto_1fr] items-center px-4 pt-[env(safe-area-inset-top)]',
+        'z-40'
       )}
     >
       {/* Trái: Back hoặc Avatar */}
-      <div className="w-10 flex items-center">
+      <div className="flex min-w-0 items-center">
         {showBack ? (
           <button
             id="btn-back"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors"
             aria-label="Quay lại"
           >
             <ChevronLeft size={22} strokeWidth={2} />
           </button>
-        ) : isHome && user?.avatar ? (
+        ) : isHome && avatarIsImage ? (
           <img
-            src={user.avatar}
-            alt={user.name}
+            src={user?.avatar}
+            alt={user?.name ?? 'Ảnh đại diện'}
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm font-semibold">
-            {user?.name?.[0] ?? 'E'}
+            {user?.avatar && !avatarIsImage ? user.avatar : user?.name?.[0] ?? 'E'}
           </div>
         )}
       </div>
@@ -79,7 +93,7 @@ export default function TopBar() {
       {/* Giữa: Tiêu đề */}
       <h1
         className={cn(
-          'font-semibold text-base',
+          'min-w-0 truncate px-3 text-center font-semibold text-base',
           isHome && 'text-gradient text-lg'
         )}
       >
@@ -87,7 +101,7 @@ export default function TopBar() {
       </h1>
 
       {/* Phải: Streak + XP hoặc Settings */}
-      <div className="w-10 flex items-center justify-end">
+      <div className="flex min-w-0 items-center justify-end">
         {isHome ? (
           <div className="flex items-center gap-2">
             {/* Streak */}

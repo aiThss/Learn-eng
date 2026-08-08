@@ -23,14 +23,13 @@ export default function BottomNav() {
     <nav
       className={cn(
         'fixed bottom-0 left-1/2 -translate-x-1/2',
-        'w-full max-w-md',
+        'w-full max-w-2xl',
         'bg-card/95 backdrop-blur-md border-t border-border',
-        'safe-bottom',
         'z-50'
       )}
       aria-label="Navigation chính"
     >
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-2 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
         {NAV_ITEMS.map(({ to, icon: Icon, label, exact }) => {
           const isActive = exact
             ? location.pathname === to
@@ -46,7 +45,7 @@ export default function BottomNav() {
               id={`nav-${label.toLowerCase().replace(/\s/g, '-')}`}
               className={cn(
                 'relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl',
-                'transition-all duration-200 min-w-[56px]',
+                'transition-colors duration-150 min-w-[56px]',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 isActive
                   ? 'text-primary'
@@ -57,7 +56,7 @@ export default function BottomNav() {
               {/* Icon với background khi active */}
               <div
                 className={cn(
-                  'relative p-1.5 rounded-xl transition-all duration-200',
+                  'relative p-1.5 rounded-xl transition-colors duration-150',
                   isActive && 'bg-primary/15'
                 )}
               >
@@ -65,14 +64,14 @@ export default function BottomNav() {
                   size={22}
                   strokeWidth={isActive ? 2.5 : 1.8}
                   className={cn(
-                    'transition-all duration-200',
-                    isActive && 'scale-110'
+                    'transition-transform duration-150',
+                    isActive && 'scale-105'
                   )}
                 />
 
                 {/* Badge số card cần ôn */}
                 {showBadge && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 animate-pulse-soft">
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                     {dueCardsCount > 99 ? '99+' : dueCardsCount}
                   </span>
                 )}
@@ -82,7 +81,7 @@ export default function BottomNav() {
               <span
                 className={cn(
                   'text-[10px] font-medium leading-none',
-                  'transition-all duration-200',
+                  'transition-colors duration-150',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               >

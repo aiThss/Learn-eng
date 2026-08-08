@@ -331,7 +331,7 @@ function PracticeTab({ isUnlocked }: { isUnlocked: boolean }) {
   }
 
   const correctCount = submitted
-    ? MOCK_EXERCISES.filter((ex, i) => answers[ex.id] === ex.correct).length
+    ? MOCK_EXERCISES.filter((ex) => answers[ex.id] === ex.correct).length
     : 0
 
   return (

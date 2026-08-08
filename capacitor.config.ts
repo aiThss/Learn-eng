@@ -7,7 +7,7 @@ const config = {
   },
   android: {
     backgroundColor: '#0f172a',
-    allowMixedContent: true,
+    allowMixedContent: false,
   },
   plugins: {
     SplashScreen: {
@@ -17,7 +17,7 @@ const config = {
       showSpinner: false,
     },
     StatusBar: {
-      style: 'DARK',
+      style: 'LIGHT',
       backgroundColor: '#0f172a',
     },
   },

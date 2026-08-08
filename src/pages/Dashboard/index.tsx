@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUserStore, useProgressStore, useLessonStore } from '@/store'
-import { getGreeting, formatNumber, formatStudyTime } from '@/lib/utils'
+import { getGreeting, formatNumber } from '@/lib/utils'
 
 // ========================
 // Sub-components
@@ -371,7 +371,7 @@ export default function Dashboard() {
               icon={BookMarked}
               label="Đọc"
               color="bg-gradient-to-br from-amber-500 to-orange-500"
-              onClick={() => navigate('/reading')}
+              onClick={() => navigate('/reading-writing')}
             />
           </div>
         </div>

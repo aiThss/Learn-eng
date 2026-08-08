@@ -8,6 +8,9 @@
 
 @import "tailwindcss";
 
+/* Dark mode do lựa chọn trong Settings điều khiển, không phụ thuộc theme hệ điều hành. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================
    TAILWIND v4 THEME CONFIGURATION
    ============================ */
@@ -103,8 +106,7 @@
 /* ============================
    DARK MODE OVERRIDES (DEEP & SHARP)
    ============================ */
-@variant dark {
-  :root {
+:root.dark {
     /* Nền tối sâu #090D16 */
     --color-background: hsl(224 71% 4%);
     --color-foreground: hsl(210 40% 98%);
@@ -143,8 +145,7 @@
 
     /* Shadows cho Dark Mode */
     --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
-    --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.6);
-  }
+  --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================
@@ -159,6 +160,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  min-height: 100%;
 }
 
 body {
@@ -170,7 +172,10 @@ body {
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: contain;
   margin: 0;
+  min-height: 100%;
 }
+
+#root { min-height: 100%; }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
@@ -186,10 +191,6 @@ h1, h2, h3, h4, h5, h6 {
 /* ============================
    CLEAR & ELEVATED UTILITIES
    ============================ */
-
-/* Safe area insets cho Mobile */
-.safe-top { padding-top: env(safe-area-inset-top); }
-.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
 /* Khung Card nâng cao với độ tương phản rõ ràng */
 .card-elevated {
@@ -240,3 +241,79 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(140, 150, 170, 0.6);
 }
+
+/* Giảm chuyển động không cần thiết cho người dùng nhạy cảm với animation. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * Các module cũ dùng thang gray cố định. Map chúng về token khi chọn light mode
+ * để giữ tương phản, trong lúc các gradient học tập vẫn giữ nhận diện thương hiệu.
+ */
+html:not(.dark) .bg-gray-950,
+html:not(.dark) .bg-gray-950\/95 { background-color: var(--color-background) !important; }
+html:not(.dark) .bg-gray-900,
+html:not(.dark) .bg-gray-900\/30,
+html:not(.dark) .bg-gray-900\/40,
+html:not(.dark) .bg-gray-900\/60,
+html:not(.dark) .bg-gray-900\/80,
+html:not(.dark) .bg-gray-900\/95 { background-color: var(--color-card) !important; }
+html:not(.dark) .bg-gray-800,
+html:not(.dark) .bg-gray-800\/30,
+html:not(.dark) .bg-gray-800\/40,
+html:not(.dark) .bg-gray-800\/50,
+html:not(.dark) .bg-gray-800\/60,
+html:not(.dark) .bg-gray-800\/80 { background-color: var(--color-card-elevated) !important; }
+html:not(.dark) .bg-gray-700,
+html:not(.dark) .bg-gray-700\/20,
+html:not(.dark) .bg-gray-700\/30,
+html:not(.dark) .bg-gray-700\/40,
+html:not(.dark) .bg-gray-700\/50,
+html:not(.dark) .bg-gray-700\/60 { background-color: var(--color-muted) !important; }
+html:not(.dark) .from-gray-900,
+html:not(.dark) .from-gray-900\/80,
+html:not(.dark) .from-gray-800\/80 {
+  --tw-gradient-from: var(--color-card) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+html:not(.dark) .to-gray-950,
+html:not(.dark) .to-gray-900,
+html:not(.dark) .to-gray-900\/80 {
+  --tw-gradient-to: var(--color-background) !important;
+}
+html:not(.dark) .border-gray-900,
+html:not(.dark) .border-gray-800,
+html:not(.dark) .border-gray-800\/50,
+html:not(.dark) .border-gray-800\/60,
+html:not(.dark) .border-gray-700,
+html:not(.dark) .border-gray-700\/30,
+html:not(.dark) .border-gray-700\/40,
+html:not(.dark) .border-gray-700\/50,
+html:not(.dark) .border-gray-600,
+html:not(.dark) .border-gray-600\/50,
+html:not(.dark) .border-gray-500 { border-color: var(--color-border) !important; }
+html:not(.dark) .text-gray-100,
+html:not(.dark) .text-gray-200,
+html:not(.dark) .text-gray-300 { color: var(--color-foreground) !important; }
+html:not(.dark) .text-gray-400 { color: var(--color-muted-foreground) !important; }
+html:not(.dark) .text-gray-500,
+html:not(.dark) .text-gray-600 { color: hsl(217 19% 38%) !important; }
+/* Chữ chính trên các section gray chuyển sang foreground; màu chữ trên nút màu giữ trắng. */
+html:not(.dark) .bg-gray-950 .text-white,
+html:not(.dark) .bg-gray-900 .text-white,
+html:not(.dark) .bg-gray-800 .text-white { color: var(--color-foreground) !important; }
+html:not(.dark) .bg-indigo-500 .text-white,
+html:not(.dark) .bg-indigo-600 .text-white,
+html:not(.dark) .bg-emerald-600 .text-white,
+html:not(.dark) .bg-red-600 .text-white,
+html:not(.dark) .bg-gradient-to-r .text-white,
+html:not(.dark) .bg-gradient-to-br .text-white { color: white !important; }
+html:not(.dark) .from-gray-900 .text-white,
+html:not(.dark) .from-gray-800 .text-white { color: var(--color-foreground) !important; }

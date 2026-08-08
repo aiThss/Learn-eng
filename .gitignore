@@ -1,4 +1,8 @@
-android/
+# Capacitor Android source được version-control; chỉ bỏ qua artefact build/caches.
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/
 ios/
 .env
 .env.local

@@ -2,11 +2,13 @@
  * Trang Từ Vựng - Vocabulary Flashcard với SRS
  * Hỗ trợ lật thẻ 3D, đánh giá chất lượng, chế độ danh sách/thẻ
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { BookOpen, List, LayoutGrid, ChevronLeft, ChevronRight, Star, TrendingUp, Clock, CheckCircle2, XCircle, Minus } from 'lucide-react'
-import { useProgressStore } from '@/store'
-import type { VocabWord } from '@/types'
+import { useLessonStore, useProgressStore, useUserStore } from '@/store'
+import type { SRSCard, VocabWord } from '@/types'
 import { cn } from '@/lib/utils'
+import { db, seedVocabularyData } from '@/services/db/schema'
+import { calculateSM2, createNewSRSCard } from '@/services/srs/sm2'
 
 // ========================
 // DỮ LIỆU MẪU PHASE 0
@@ -157,6 +159,8 @@ function WordListItem({ word, rating }: WordListItemProps) {
 // ========================
 export default function VocabularyPage() {
   const { progress, incrementVocab, addXP } = useProgressStore()
+  const { user } = useUserStore()
+  const { setSRSCards } = useLessonStore()
 
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [studyMode, setStudyMode] = useState<StudyMode>('all')
@@ -166,6 +170,34 @@ export default function VocabularyPage() {
     reviewed: new Set(),
     ratings: {},
   })
+  const [storedCards, setStoredCards] = useState<SRSCard[]>([])
+
+  // Một nguồn dữ liệu SRS duy nhất: IndexedDB. Trang có thể đóng/mở hoặc offline
+  // mà lịch ôn vẫn giữ nguyên, không còn là state tạm của component.
+  useEffect(() => {
+    let cancelled = false
+    const loadSRS = async () => {
+      await seedVocabularyData(SAMPLE_WORDS)
+      if (!user) return
+
+      const cards = await db.srsCards.where('userId').equals(user.id).toArray() as SRSCard[]
+      if (cancelled) return
+
+      setStoredCards(cards)
+      setSRSCards(cards)
+      setCardState((previous) => ({
+        ...previous,
+        reviewed: new Set(cards.filter(card => card.lastReview).map(card => card.wordId)),
+        ratings: Object.fromEntries(
+          cards
+            .filter(card => card.quality !== undefined)
+            .map(card => [card.wordId, (card.quality! >= 5 ? 5 : card.quality! >= 3 ? 3 : 1) as RatingQuality]),
+        ),
+      }))
+    }
+    void loadSRS()
+    return () => { cancelled = true }
+  }, [setSRSCards, user])
 
   // Lọc danh sách từ theo chế độ học
   const filteredWords = SAMPLE_WORDS.filter(w => {
@@ -189,8 +221,31 @@ export default function VocabularyPage() {
   }, [])
 
   // Đánh giá chất lượng và chuyển thẻ
-  const handleRate = useCallback((quality: RatingQuality) => {
-    if (!currentWord) return
+  const handleRate = useCallback(async (quality: RatingQuality) => {
+    if (!currentWord || !user) return
+
+    const previousCard = storedCards.find(card => card.wordId === currentWord.id)
+    const sourceCard = previousCard ?? createNewSRSCard(currentWord.id, user.id)
+    const sm2 = calculateSM2(quality, sourceCard)
+    const nextCard: SRSCard = {
+      ...sourceCard,
+      ...sm2,
+      quality,
+      lastReview: new Date(),
+      isNew: false,
+    }
+
+    if (previousCard) {
+      await db.srsCards.where({ wordId: currentWord.id, userId: user.id }).modify(nextCard)
+    } else {
+      await db.srsCards.add(nextCard)
+    }
+
+    const nextCards = previousCard
+      ? storedCards.map(card => card.wordId === currentWord.id ? nextCard : card)
+      : [...storedCards, nextCard]
+    setStoredCards(nextCards)
+    setSRSCards(nextCards)
 
     setCardState(prev => {
       const newReviewed = new Set(prev.reviewed)
@@ -201,11 +256,11 @@ export default function VocabularyPage() {
       return { index: nextIndex, isFlipped: false, reviewed: newReviewed, ratings: newRatings }
     })
 
-    incrementVocab(false)
+    incrementVocab(!previousCard, !previousCard?.isMastered && nextCard.isMastered)
     if (quality === 5) addXP(5)
     else if (quality === 3) addXP(2)
     else addXP(1)
-  }, [currentWord, filteredWords.length, incrementVocab, addXP])
+  }, [currentWord, filteredWords.length, storedCards, user, incrementVocab, addXP, setSRSCards])
 
   const handlePrev = () => setCardState(prev => ({ ...prev, index: Math.max(0, prev.index - 1), isFlipped: false }))
   const handleNext = () => setCardState(prev => ({ ...prev, index: Math.min(filteredWords.length - 1, prev.index + 1), isFlipped: false }))

@@ -25,6 +25,7 @@ const ProgressPage = lazy(() => import('@/pages/Progress'))
 const AITutorPage = lazy(() => import('@/pages/AITutor'))
 const SettingsPage = lazy(() => import('@/pages/Settings'))
 const ReviewPage = lazy(() => import('@/pages/Review'))
+const DownloadPage = lazy(() => import('@/pages/Download'))
 
 /**
  * Guard: Redirect về Onboarding nếu chưa setup
@@ -83,6 +84,7 @@ export default function AppRouter() {
           <Route path="/ai-tutor" element={<AITutorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/review" element={<ReviewPage />} />
+          <Route path="/download" element={<DownloadPage />} />
         </Route>
 
         {/* Fallback */}

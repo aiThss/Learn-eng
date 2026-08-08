@@ -110,12 +110,12 @@ interface ProgressStore {
   addXP: (xp: number) => void
   updateStreak: (lastDate: Date) => void
   updateTodayActivity: (updates: Partial<DailyActivity>) => void
-  incrementVocab: (isNew?: boolean) => void
+  incrementVocab: (isNew?: boolean, isMastered?: boolean) => void
 }
 
 export const useProgressStore = create<ProgressStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       progress: null,
       todayActivity: null,
       
@@ -127,8 +127,9 @@ export const useProgressStore = create<ProgressStore>()(
             ? { ...state.progress, totalXP: state.progress.totalXP + xp }
             : null,
           todayActivity: state.todayActivity
+            && state.todayActivity.date === createEmptyDailyActivity().date
             ? { ...state.todayActivity, xpEarned: state.todayActivity.xpEarned + xp }
-            : null,
+            : { ...createEmptyDailyActivity(), xpEarned: xp },
         })),
       
       updateStreak: (lastDate) => {
@@ -162,11 +163,12 @@ export const useProgressStore = create<ProgressStore>()(
       updateTodayActivity: (updates) =>
         set((state) => ({
           todayActivity: state.todayActivity
+            && state.todayActivity.date === createEmptyDailyActivity().date
             ? { ...state.todayActivity, ...updates }
             : { ...createEmptyDailyActivity(), ...updates },
         })),
       
-      incrementVocab: (isNew = false) =>
+      incrementVocab: (isNew = false, isMastered = false) =>
         set((state) => ({
           progress: state.progress
             ? {
@@ -174,9 +176,13 @@ export const useProgressStore = create<ProgressStore>()(
                 vocabularyCount: isNew
                   ? state.progress.vocabularyCount + 1
                   : state.progress.vocabularyCount,
+                masteredWordCount: isMastered
+                  ? state.progress.masteredWordCount + 1
+                  : state.progress.masteredWordCount,
               }
             : null,
           todayActivity: state.todayActivity
+            && state.todayActivity.date === createEmptyDailyActivity().date
             ? {
                 ...state.todayActivity,
                 vocabularyNew: isNew
@@ -186,7 +192,11 @@ export const useProgressStore = create<ProgressStore>()(
                   ? state.todayActivity.vocabularyReviewed + 1
                   : state.todayActivity.vocabularyReviewed,
               }
-            : null,
+            : {
+                ...createEmptyDailyActivity(),
+                vocabularyNew: isNew ? 1 : 0,
+                vocabularyReviewed: isNew ? 0 : 1,
+              },
         })),
     }),
     {
@@ -197,7 +207,7 @@ export const useProgressStore = create<ProgressStore>()(
 )
 
 // ========================
-// LESSON STORE (không persist - load lại mỗi session)
+// LESSON STORE
 // ========================
 interface LessonStore {
   currentPhase: LearningPhase
@@ -212,30 +222,43 @@ interface LessonStore {
   updateDueCount: () => void
 }
 
-export const useLessonStore = create<LessonStore>((set, get) => ({
-  currentPhase: 'PHASE_0',
-  currentWeek: 1,
-  srsCards: [],
-  dueCardsCount: 0,
-  newWordsCount: 0,
-  
-  setPhase: (phase) => set({ currentPhase: phase }),
-  setWeek: (week) => set({ currentWeek: week }),
-  
-  setSRSCards: (cards) => {
-    const now = new Date()
-    const due = cards.filter(c => new Date(c.dueDate) <= now && !c.isMastered)
-    const newCards = cards.filter(c => c.isNew)
-    set({ srsCards: cards, dueCardsCount: due.length, newWordsCount: newCards.length })
-  },
-  
-  updateDueCount: () => {
-    const { srsCards } = get()
-    const now = new Date()
-    const due = srsCards.filter(c => new Date(c.dueDate) <= now && !c.isMastered)
-    set({ dueCardsCount: due.length })
-  },
-}))
+export const useLessonStore = create<LessonStore>()(
+  persist(
+    (set, get) => ({
+      currentPhase: 'PHASE_0',
+      currentWeek: 1,
+      srsCards: [],
+      dueCardsCount: 0,
+      newWordsCount: 0,
+
+      setPhase: (phase) => set({ currentPhase: phase }),
+      setWeek: (week) => set({ currentWeek: Math.max(1, week) }),
+
+      setSRSCards: (cards) => {
+        const now = new Date()
+        const due = cards.filter(c => new Date(c.dueDate) <= now && !c.isMastered)
+        const newCards = cards.filter(c => c.isNew)
+        set({ srsCards: cards, dueCardsCount: due.length, newWordsCount: newCards.length })
+      },
+
+      updateDueCount: () => {
+        const { srsCards } = get()
+        const now = new Date()
+        const due = srsCards.filter(c => new Date(c.dueDate) <= now && !c.isMastered)
+        set({ dueCardsCount: due.length })
+      },
+    }),
+    {
+      name: 'englishup-lesson',
+      storage: createJSONStorage(() => localStorage),
+      // Cards được lưu chuẩn trong IndexedDB; localStorage chỉ giữ vị trí lộ trình.
+      partialize: (state) => ({
+        currentPhase: state.currentPhase,
+        currentWeek: state.currentWeek,
+      }),
+    },
+  ),
+)
 
 // ========================
 // AI CHAT STORE
@@ -305,5 +328,27 @@ function createEmptyDailyActivity(): DailyActivity {
     goalReached: false,
     exercisesCompleted: 0,
     exercisesCorrect: 0,
+  }
+}
+
+/** Tạo số liệu khởi đầu để Dashboard luôn có dữ liệu hợp lệ sau onboarding. */
+export function createInitialProgress(userId: string): UserProgress {
+  return {
+    userId,
+    totalXP: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    completedDays: 0,
+    totalStudyMinutes: 0,
+    vocabularyCount: 0,
+    masteredWordCount: 0,
+    grammarLessonsCompleted: 0,
+    listeningMinutes: 0,
+    speakingMinutes: 0,
+    readingWords: 0,
+    writingTasksCompleted: 0,
+    testScores: [],
+    estimatedIELTS: 3.0,
+    estimatedTOEIC: 250,
   }
 }

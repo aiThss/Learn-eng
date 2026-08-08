@@ -15,7 +15,7 @@ import {
   Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useUserStore } from '@/store'
+import { createInitialProgress, useLessonStore, useProgressStore, useUserStore } from '@/store'
 import type { LearningPhase, User } from '@/types'
 
 // ========================
@@ -465,6 +465,8 @@ function ResultStep({
 export default function Onboarding() {
   const navigate = useNavigate()
   const { completeOnboarding } = useUserStore()
+  const { setProgress } = useProgressStore()
+  const { setPhase, setWeek } = useLessonStore()
 
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
@@ -500,6 +502,9 @@ export default function Onboarding() {
 
     // Gọi completeOnboarding() để lưu user và set isOnboarded = true
     completeOnboarding(newUser)
+    setProgress(createInitialProgress(newUser.id))
+    setPhase(recommendedPhase)
+    setWeek(1)
 
     // Điều hướng về Dashboard
     navigate('/')

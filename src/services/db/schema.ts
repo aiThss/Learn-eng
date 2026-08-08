@@ -83,13 +83,13 @@ export async function getDueCards(userId: string, limit = 20): Promise<SRSCard[]
  * Lấy các từ mới chưa học (chưa có SRS card)
  */
 export async function getNewWords(userId: string, phase: string, limit = 10): Promise<VocabWord[]> {
-  const learnedWordIds = await db.srsCards
-    .where('userId').equals(userId)
-    .primaryKeys()
+  const learnedWordIds = new Set(
+    (await db.srsCards.where('userId').equals(userId).toArray()).map(card => card.wordId)
+  )
     
   return db.vocabWords
     .where('phase').equals(phase)
-    .and(word => !learnedWordIds.includes(word.id))
+    .and(word => !learnedWordIds.has(word.id))
     .limit(limit)
     .toArray()
 }

@@ -3,8 +3,6 @@
  * Dùng Web Speech API để đọc tiếng Anh
  */
 
-let currentUtterance: SpeechSynthesisUtterance | null = null
-
 /**
  * Đọc text bằng giọng tiếng Anh
  */
@@ -41,7 +39,6 @@ export function speak(
     utterance.voice = englishVoice
   }
 
-  currentUtterance = utterance
   window.speechSynthesis.speak(utterance)
 }
 
@@ -51,7 +48,6 @@ export function speak(
 export function stopSpeaking(): void {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel()
-    currentUtterance = null
   }
 }
 

@@ -3,12 +3,11 @@
  * Hiển thị dự đoán IELTS/TOEIC, heatmap 7 ngày, skill breakdown, thành tích
  */
 import { Award, Flame, Zap, BookOpen, Mic, FileText, CheckCircle2, TrendingUp } from 'lucide-react'
-import { useProgressStore, useUserStore } from '@/store'
+import { useProgressStore } from '@/store'
 import { estimateIELTS } from '@/lib/utils'
 
 export default function ProgressPage() {
   const { progress } = useProgressStore()
-  const { user } = useUserStore()
 
   const vocabCount = progress?.vocabularyCount ?? 45
   const grammarCount = progress?.grammarLessonsCompleted ?? 6

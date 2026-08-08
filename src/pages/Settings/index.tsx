@@ -25,10 +25,12 @@ import {
   Clock,
   Target,
   Zap,
+  Download,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useSettingsStore, useUserStore, useProgressStore } from '@/store'
+import { createInitialProgress, useLessonStore, useSettingsStore, useUserStore, useProgressStore } from '@/store'
 import { callAI } from '@/services/ai/gemini'
+import { db } from '@/services/db/schema'
 
 // ========================
 // Helper: Section header
@@ -81,13 +83,18 @@ function SettingRow({
 function Toggle({
   value,
   onChange,
+  label,
 }: {
   value: boolean
   onChange: (v: boolean) => void
+  label: string
 }) {
   return (
     <button
+      type="button"
       onClick={() => onChange(!value)}
+      aria-label={label}
+      aria-pressed={value}
       className={cn(
         'relative w-12 h-6 rounded-full transition-all duration-300',
         value ? 'bg-indigo-500' : 'bg-gray-600'
@@ -169,6 +176,7 @@ export default function Settings() {
   const { settings, updateSettings, setApiKey } = useSettingsStore()
   const { user, updateUser } = useUserStore()
   const { setProgress } = useProgressStore()
+  const { setSRSCards, setPhase, setWeek } = useLessonStore()
 
   // Local state
   const [apiKeyInput, setApiKeyInput] = useState(settings.geminiApiKey ?? '')
@@ -201,7 +209,6 @@ export default function Settings() {
     setApiTestResult('idle')
 
     // Lưu key tạm để test
-    const prevKey = import.meta.env.VITE_GEMINI_API_KEY
     try {
       // Lưu key vào settings trước khi test
       setApiKey(apiKeyInput.trim())
@@ -230,26 +237,22 @@ export default function Settings() {
   }
 
   // ── Reset tiến trình ──
-  const handleReset = () => {
+  const handleReset = async () => {
     setShowResetDialog(false)
-    setProgress({
-      userId: user?.id ?? 'local',
-      totalXP: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      completedDays: 0,
-      totalStudyMinutes: 0,
-      vocabularyCount: 0,
-      masteredWordCount: 0,
-      grammarLessonsCompleted: 0,
-      listeningMinutes: 0,
-      speakingMinutes: 0,
-      readingWords: 0,
-      writingTasksCompleted: 0,
-      testScores: [],
-      estimatedIELTS: undefined,
-      estimatedTOEIC: undefined,
-    })
+    if (user) {
+      await db.transaction('rw', db.srsCards, db.dailyActivities, db.completedLessons, db.testScores, async () => {
+        await Promise.all([
+          db.srsCards.where('userId').equals(user.id).delete(),
+          db.dailyActivities.where('userId').equals(user.id).delete(),
+          db.completedLessons.where('userId').equals(user.id).delete(),
+          db.testScores.where('userId').equals(user.id).delete(),
+        ])
+      })
+    }
+    setProgress(createInitialProgress(user?.id ?? 'local'))
+    setSRSCards([])
+    setPhase(user?.currentPhase ?? 'PHASE_0')
+    setWeek(1)
     showToast('Đã reset tiến trình học tập')
   }
 
@@ -268,6 +271,7 @@ export default function Settings() {
     PHASE_2: 'A2 · Trung cấp',
     PHASE_3: 'B1 · Khá',
   }
+  const avatarIsImage = Boolean(user?.avatar && /^(https?:|data:image\/)/.test(user.avatar))
 
   return (
     <div className="min-h-screen bg-gray-950 text-white pb-28">
@@ -276,8 +280,10 @@ export default function Settings() {
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
-            {user?.avatar ? (
-              <img src={user.avatar} alt="avatar" className="w-full h-full rounded-2xl object-cover" />
+            {avatarIsImage ? (
+              <img src={user?.avatar} alt="avatar" className="w-full h-full rounded-2xl object-cover" />
+            ) : user?.avatar ? (
+              <span className="text-4xl" aria-hidden="true">{user.avatar}</span>
             ) : (
               <User className="w-8 h-8 text-white" />
             )}
@@ -475,6 +481,7 @@ export default function Settings() {
               <Toggle
                 value={settings.darkMode}
                 onChange={(v) => updateSettings({ darkMode: v })}
+                label="Bật hoặc tắt chế độ tối"
               />
             </div>
           </SettingRow>
@@ -517,6 +524,7 @@ export default function Settings() {
               <Toggle
                 value={settings.soundEnabled}
                 onChange={(v) => updateSettings({ soundEnabled: v })}
+                label="Bật hoặc tắt âm thanh"
               />
             </div>
           </SettingRow>
@@ -531,6 +539,7 @@ export default function Settings() {
               <Toggle
                 value={settings.notificationsEnabled}
                 onChange={(v) => updateSettings({ notificationsEnabled: v })}
+                label="Bật hoặc tắt thông báo"
               />
             </div>
           </SettingRow>
@@ -556,8 +565,18 @@ export default function Settings() {
 
           {/* App version */}
           <SettingRow label="Phiên bản ứng dụng" sublabel="EnglishUp">
-            <span className="text-sm text-gray-500 font-mono">v1.0.0</span>
+            <span className="text-sm text-gray-500 font-mono">v0.1.0</span>
           </SettingRow>
+          <a
+            href="/download"
+            className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-gray-700/20 active:bg-gray-700/30"
+          >
+            <div>
+              <p className="text-sm font-medium text-white">Tải Android</p>
+              <p className="mt-0.5 text-xs text-gray-500">Quét QR hoặc tải APK chính thức</p>
+            </div>
+            <Download className="h-4 w-4 text-indigo-400" />
+          </a>
         </div>
 
         {/* ── Nút Lưu ── */}
