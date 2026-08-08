@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.env
+.env.*
+android
+releases
+lumina-logo.png
+npm-debug.log*
