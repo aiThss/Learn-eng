@@ -572,6 +572,20 @@ html:not(.dark) .font-mono {
   border-color: #065f46;
 }
 
+/* Answer choices must remain readable when a light surface is selected.
+ * The explicit rule also wins over the legacy theme bridge and inherited
+ * text-white classes used by the first-run learning flow. */
+.answer-choice[data-selected='true'] {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-accent-foreground) !important;
+}
+
+.answer-choice[data-selected='true'] .answer-choice-marker {
+  background-color: var(--color-primary) !important;
+  color: var(--color-primary-foreground) !important;
+}
+
 /* The light-theme compatibility bridge turns translucent legacy surfaces into
  * pale semantic tints. Never leave white text on those surfaces. Solid action
  * buttons (bg-*-500/600 without a slash) intentionally keep white text. */

@@ -620,18 +620,19 @@ export default function Practice() {
                 <button
                   key={i}
                   onClick={() => setAnswer(letter)}
+                  data-selected={isSelected}
                   className={cn(
-                    'flex min-h-14 w-full items-center gap-3 rounded-[1.25rem] border px-4 py-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    'answer-choice flex min-h-14 w-full items-center gap-3 rounded-[1.25rem] border px-4 py-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isSelected
-                      ? 'border-2 border-primary bg-[#eaf2ff] text-foreground'
+                      ? 'border-2 border-primary bg-accent text-accent-foreground'
                       : 'border-border bg-card text-foreground hover:border-border-strong hover:bg-muted'
                   )}
                   aria-pressed={isSelected}
                 >
                   <span
                     className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold',
-                      isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                      'answer-choice-marker flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold',
+                      isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     )}
                   >
                     {letter}

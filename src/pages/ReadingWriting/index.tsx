@@ -246,13 +246,14 @@ function ReadingTab() {
                     <button
                       key={optIdx}
                       onClick={() => handleAnswer(q.id, optStr)}
+                      data-selected={!checked && isSelected}
                       className={cn(
-                        'w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl',
+                        'answer-choice w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl',
                         'text-sm transition-all duration-150',
                         'border',
                         // Chưa check
-                        !checked && isSelected
-                          ? 'border-indigo-500 bg-indigo-500/20 text-foreground'
+                          !checked && isSelected
+                          ? 'border-2 border-primary bg-accent text-accent-foreground'
                           : !checked
                           ? 'border-gray-700/50 bg-gray-700/30 text-gray-300 hover:border-gray-600'
                           : // Đã check
@@ -267,7 +268,7 @@ function ReadingTab() {
                         className={cn(
                           'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
                           !checked && isSelected
-                            ? 'bg-indigo-500 text-white'
+                            ? 'answer-choice-marker bg-primary text-primary-foreground'
                             : checked && isThisCorrect
                             ? 'bg-green-500 text-white'
                             : checked && isSelected && !isThisCorrect

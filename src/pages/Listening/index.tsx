@@ -312,7 +312,8 @@ function QuestionItem({ question, selectedAnswer, submitted, onSelect }: Questio
               key={i}
               onClick={() => !submitted && onSelect(i)}
               disabled={submitted}
-              className={cn('flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm transition-all', optionStyle)}
+              data-selected={!submitted && isSelected}
+              className={cn('answer-choice flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm transition-all', optionStyle)}
             >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-600 text-xs font-bold">
                 {String.fromCharCode(65 + i)}

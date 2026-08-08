@@ -310,11 +310,12 @@ function PlacementTestStep({
             <button
               key={oi}
               onClick={() => onAnswer(question.id, oi)}
+              data-selected={isSelected}
               className={cn(
-                'w-full text-left p-4 rounded-xl border text-sm font-medium transition-all active:scale-[0.98]',
+                'answer-choice w-full text-left p-4 rounded-xl border text-sm font-medium transition-all active:scale-[0.98]',
                 isSelected
-                  ? 'border-indigo-500 bg-indigo-500/20 text-foreground'
-                  : 'border-gray-700/40 bg-gray-800/40 text-gray-300 hover:border-gray-600'
+                  ? 'border-2 border-primary bg-accent text-accent-foreground shadow-card'
+                  : 'border-border bg-card text-foreground hover:border-border-strong hover:bg-muted'
               )}
             >
               <span className="mr-3 text-xs opacity-60 font-bold">

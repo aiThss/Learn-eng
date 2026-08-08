@@ -298,10 +298,11 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
                     onClick={() =>
                       setSelectedAnswers((prev) => ({ ...prev, [qi]: oi }))
                     }
+                    data-selected={selectedAnswers[qi] === oi}
                     className={cn(
-                      'text-left p-3 rounded-xl border text-sm font-medium transition-all',
+                      'answer-choice text-left p-3 rounded-xl border text-sm font-medium transition-all',
                       selectedAnswers[qi] === oi
-                        ? 'border-teal-500 bg-teal-500/20 text-teal-300'
+                        ? 'border-2 border-primary bg-accent text-accent-foreground'
                         : 'border-gray-700/40 bg-gray-800/40 text-gray-300 hover:border-gray-600'
                     )}
                   >
@@ -375,8 +376,9 @@ function PracticeTab({ isUnlocked }: { isUnlocked: boolean }) {
                   onClick={() =>
                     !submitted && setAnswers((prev) => ({ ...prev, [ex.id]: oi }))
                   }
+                  data-selected={!submitted && isSelected}
                   className={cn(
-                    'text-left p-3 rounded-xl border text-sm font-medium transition-all',
+                    'answer-choice text-left p-3 rounded-xl border text-sm font-medium transition-all',
                     optStyle
                   )}
                 >

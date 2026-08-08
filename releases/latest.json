@@ -1,8 +1,8 @@
 {
-  "version": "0.1.6",
-  "versionCode": 8,
-  "apkName": "EnglishUp-v0.1.6.apk",
-  "downloadUrl": "https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.1.6.apk",
-  "sha256": "4B24D6EBD29AC1387ECA4A1301780928A246BFE29DD2F03EA31164BA297320E7",
-  "publishedAt": "2026-08-09T01:25:28+07:00"
+  "version": "0.1.7",
+  "versionCode": 9,
+  "apkName": "EnglishUp-v0.1.7.apk",
+  "downloadUrl": "https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.1.7.apk",
+  "sha256": "0A9A5A9BA133A0C9BA1967728AE652FDE50F27E8E090F485CF763736AD9F7790",
+  "publishedAt": "2026-08-09T01:45:38+07:00"
 }
