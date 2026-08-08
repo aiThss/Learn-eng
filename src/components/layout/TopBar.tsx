@@ -3,7 +3,7 @@
  * Hiển thị tiêu đề trang, streak, XP, và menu
  */
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Flame, Zap, Settings, UserRound } from 'lucide-react'
+import { ChevronLeft, Flame, Zap, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProgressStore, useUserStore } from '@/store'
 
@@ -28,7 +28,7 @@ const PAGE_TITLES: Record<string, string> = {
 // Trang có nút back
 const BACK_PAGES = [
   '/roadmap', '/lesson/today', '/grammar', '/listening',
-  '/speaking', '/reading-writing', '/review', '/download',
+  '/speaking', '/reading-writing', '/review', '/download', '/settings',
 ]
 
 export default function TopBar() {
@@ -77,12 +77,27 @@ export default function TopBar() {
           >
             <ChevronLeft size={22} strokeWidth={2} />
           </button>
-        ) : isHome && avatarIsImage ? (
-          <img
-            src={user?.avatar}
-            alt={user?.name ?? 'Ảnh đại diện'}
-            className="h-9 w-9 rounded-full object-cover"
-          />
+        ) : isHome ? (
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            className="rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Hồ sơ & Cài đặt"
+          >
+            {avatarIsImage ? (
+              <img
+                src={user?.avatar}
+                alt={user?.name ?? 'Ảnh đại diện'}
+                className="h-9 w-9 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#bfdbfe] bg-[#eaf2ff] text-sm font-bold text-primary">
+                {user?.name?.[0] ?? (
+                  <UserRound className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+                )}
+              </div>
+            )}
+          </button>
         ) : (
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#bfdbfe] bg-[#eaf2ff] text-sm font-bold text-primary" aria-label="Hồ sơ người học">
             {user?.name?.[0] ?? (
@@ -102,9 +117,9 @@ export default function TopBar() {
         {title}
       </h1>
 
-      {/* Phải: Streak + XP; Cài đặt luôn có mặt, kể cả ở Dashboard. */}
+      {/* Phải: Streak + XP chỉ xuất hiện ở Dashboard. */}
       <div className="flex min-w-0 items-center justify-end">
-        {isHome ? (
+        {isHome && (
           <div className="flex items-center gap-2">
             {/* Streak */}
             <div className="flex items-center gap-0.5">
@@ -128,24 +143,7 @@ export default function TopBar() {
                 {xp >= 1000 ? `${(xp / 1000).toFixed(1)}k` : xp}
               </span>
             </div>
-            <button
-              id="btn-settings-topbar"
-              onClick={() => navigate('/settings')}
-              className="-mr-2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Cài đặt"
-            >
-              <Settings size={20} strokeWidth={1.8} />
-            </button>
           </div>
-        ) : (
-          <button
-            id="btn-settings-topbar"
-            onClick={() => navigate('/settings')}
-            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Cài đặt"
-          >
-            <Settings size={20} strokeWidth={1.8} />
-          </button>
         )}
       </div>
     </header>

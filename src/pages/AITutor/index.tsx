@@ -4,6 +4,7 @@
  * Hỗ trợ Markdown cơ bản: **bold**, *italic*, \n cho xuống dòng
  */
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bot, Send, RefreshCw, Wifi, WifiOff, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useChatStore, useUserStore, useSettingsStore } from '@/store'
@@ -160,6 +161,7 @@ function AIBubble({ msg, onRetry }: { msg: ChatMessage; onRetry?: () => void }) 
 // Trang chính AITutor
 // ========================
 export default function AITutor() {
+  const navigate = useNavigate()
   const { messages, isLoading, addMessage, setLoading, updateLastMessage, clearChat } =
     useChatStore()
   const { user } = useUserStore()
@@ -381,7 +383,15 @@ export default function AITutor() {
         {!hasApiKey && (
           <div className="mb-2 px-3 py-2 rounded-xl bg-amber-900/30 border border-amber-500/30">
             <p className="text-amber-400 text-xs">
-              ⚠️ Chưa có API key. Vào <strong>Settings → AI & API</strong> để thêm Gemini API key.
+              ⚠️ Chưa có API key. Vào{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/settings')}
+                className="font-bold focus-visible:underline"
+              >
+                Settings → AI & API
+              </button>{' '}
+              để thêm Gemini API key.
             </p>
           </div>
         )}
