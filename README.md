@@ -1,7 +1,7 @@
 # 🚀 EnglishUp - Học Tiếng Anh Thông Minh từ A0 đến B1
 
 <p justify="center">
-  <a href="https://github.com/aiThss/Learn-eng/releases/download/v0.1.0/EnglishUp-v0.1.0.apk">
+  <a href="https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.1.0.apk">
     <img src="https://img.shields.io/badge/📥%20Download-Android%20APK%20v0.1.0-brightgreen.svg?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
   <a href="https://github.com/aiThss/Learn-eng/releases/tag/v0.1.0">
@@ -18,9 +18,9 @@
 
 Nhấn vào nút bên dưới để tải trực tiếp file APK về điện thoại Android của bạn:
 
-👉 [**📥 Tải EnglishUp v0.1.0 APK**](https://github.com/aiThss/Learn-eng/releases/download/v0.1.0/EnglishUp-v0.1.0.apk)
+👉 [**📥 Tải EnglishUp v0.1.0 APK**](https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.1.0.apk)
 
-Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến GitHub Releases; luôn đối chiếu SHA-256 trong ghi chú phát hành trước khi cài đặt.
+Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến repository GitHub chính thức; luôn đối chiếu SHA-256 trong tệp `.sha256` trước khi cài đặt.
 
 SHA-256 của `EnglishUp-v0.1.0.apk`: `BB432AB3465C97C6F6DFE2700E73AF20B43503393CE558B57B4571BDAAE8EFD4`
 

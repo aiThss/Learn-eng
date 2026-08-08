@@ -47,9 +47,9 @@ export default function DownloadPage() {
             Kiểm tra trước khi cài đặt
           </div>
           <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
-            <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />Chỉ tải từ GitHub Releases của EnglishUp.</li>
+            <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />Chỉ tải từ repository GitHub chính thức của EnglishUp.</li>
             <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />Xác nhận tên tệp: <span className="font-mono text-foreground">{ANDROID_RELEASE.apkName}</span>.</li>
-            <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />Đọc mã SHA-256 trong ghi chú phát hành trước khi cài.</li>
+            <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-success" />Đối chiếu SHA-256 trong tệp <span className="font-mono text-foreground">.sha256</span> trước khi cài.</li>
           </ul>
           <a
             href={ANDROID_RELEASE.releaseUrl}
@@ -57,7 +57,7 @@ export default function DownloadPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
           >
-            Mở ghi chú phát hành <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            Mở thư mục phát hành <ExternalLink className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
       </section>
