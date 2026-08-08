@@ -261,7 +261,7 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
             onClick={() => onSpeedChange(s)}
             className={cn(
               'rounded-lg px-3 py-1 text-sm font-medium transition-colors',
-              speed === s ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
+              speed === s ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-400 hover:text-foreground'
             )}
           >
             {s}x

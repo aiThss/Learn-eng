@@ -252,7 +252,7 @@ function ReadingTab() {
                         'border',
                         // Chưa check
                         !checked && isSelected
-                          ? 'border-indigo-500 bg-indigo-500/20 text-white'
+                          ? 'border-indigo-500 bg-indigo-500/20 text-foreground'
                           : !checked
                           ? 'border-gray-700/50 bg-gray-700/30 text-gray-300 hover:border-gray-600'
                           : // Đã check

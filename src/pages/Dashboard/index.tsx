@@ -428,7 +428,7 @@ export default function Dashboard() {
           </div>
           <div className="flex-1">
             <p className="text-xs text-gray-400 font-semibold mb-0.5">LỘ TRÌNH HỌC</p>
-            <p className="text-white font-bold">Xem toàn bộ lộ trình A0 → B1</p>
+            <p className="text-foreground font-bold">Xem toàn bộ lộ trình A0 → B1</p>
             <p className="text-gray-400 text-xs mt-0.5">
               {phaseLabels[currentPhase]}
             </p>

@@ -313,7 +313,7 @@ function PlacementTestStep({
               className={cn(
                 'w-full text-left p-4 rounded-xl border text-sm font-medium transition-all active:scale-[0.98]',
                 isSelected
-                  ? 'border-indigo-500 bg-indigo-500/20 text-white'
+                  ? 'border-indigo-500 bg-indigo-500/20 text-foreground'
                   : 'border-gray-700/40 bg-gray-800/40 text-gray-300 hover:border-gray-600'
               )}
             >

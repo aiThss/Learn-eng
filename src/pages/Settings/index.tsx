@@ -131,9 +131,9 @@ function ConfirmDialog({
         <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-7 h-7 text-red-400" />
         </div>
-        <h3 className="text-lg font-black text-white text-center mb-2">Reset tiến trình?</h3>
+        <h3 className="text-lg font-black text-white text-center mb-2">Reset tiến trình học?</h3>
         <p className="text-sm text-gray-400 text-center mb-6 leading-relaxed">
-          Toàn bộ tiến độ học tập, từ vựng đã học, và điểm số sẽ bị xóa vĩnh viễn. Bạn chắc chắn?
+          Chỉ xóa tiến độ học tập, từ vựng đã học và điểm số. Hồ sơ, tên, avatar và cài đặt của bạn vẫn được giữ nguyên.
         </p>
         <div className="flex gap-3">
           <button
@@ -146,7 +146,7 @@ function ConfirmDialog({
             onClick={onConfirm}
             className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition-colors"
           >
-            Xóa tất cả
+            Reset tiến trình
           </button>
         </div>
       </div>
@@ -163,10 +163,12 @@ function Toast({ message, type = 'success' }: { message: string; type?: 'success
       className={cn(
         'fixed bottom-24 left-1/2 -translate-x-1/2 z-50',
         'flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl',
-        'text-sm font-medium text-white',
+        'status-toast text-sm font-medium',
         'animate-[slideUp_0.3s_ease]',
-        type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        type === 'success' ? 'status-toast-success' : 'status-toast-error'
       )}
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
     >
       {type === 'success' ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
       {message}
@@ -477,9 +479,9 @@ export default function Settings() {
                 'w-full py-2.5 rounded-xl font-semibold text-sm border transition-all duration-200',
                 'flex items-center justify-center gap-2',
                 apiTestResult === 'success'
-                  ? 'bg-green-900/30 border-green-500/40 text-green-400'
+                  ? 'status-surface status-surface-success'
                   : apiTestResult === 'error'
-                  ? 'bg-red-900/30 border-red-500/40 text-red-400'
+                  ? 'status-surface status-surface-error'
                   : 'bg-gray-700/40 border-gray-600/50 text-gray-300 hover:border-gray-500 disabled:opacity-40'
               )}
             >

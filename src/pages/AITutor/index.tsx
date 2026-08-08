@@ -325,7 +325,7 @@ export default function AITutor() {
         {/* Nút xóa chat */}
         <button
           onClick={handleClearChat}
-          className="flex-shrink-0 p-2 rounded-xl bg-gray-800/60 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+          className="flex-shrink-0 p-2 rounded-xl bg-gray-800/60 text-gray-400 hover:text-foreground hover:bg-gray-700 transition-colors"
           title="Xóa lịch sử chat"
         >
           <X className="w-4 h-4" />
@@ -359,7 +359,7 @@ export default function AITutor() {
                   className={cn(
                     'px-3 py-1.5 rounded-full text-xs font-medium',
                     'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300',
-                    'hover:bg-indigo-500/30 hover:text-white transition-all duration-200',
+                    'hover:bg-indigo-500/30 hover:text-foreground transition-all duration-200',
                     'active:scale-95'
                   )}
                 >

@@ -105,6 +105,26 @@
   }
 }
 
+/* Semantic status surfaces. Keep these separate from the legacy Tailwind hue
+ * bridge below so alerts stay readable in both themes. */
+:root {
+  --status-error-surface: #fef2f2;
+  --status-error-foreground: #991b1b;
+  --status-error-border: #fecaca;
+  --status-success-surface: #ecfdf5;
+  --status-success-foreground: #065f46;
+  --status-success-border: #a7f3d0;
+  --status-warning-surface: #fffbeb;
+  --status-warning-foreground: #854d0e;
+  --status-warning-border: #fde68a;
+  --status-info-surface: #eff6ff;
+  --status-info-foreground: #1e40af;
+  --status-info-border: #bfdbfe;
+  --status-toast-error: #b91c1c;
+  --status-toast-success: #047857;
+  --status-toast-foreground: #ffffff;
+}
+
 /* ============================
    DARK MODE OVERRIDES (DEEP & SHARP)
    ============================ */
@@ -148,6 +168,19 @@
     /* Shadows cho Dark Mode */
     --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
   --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  --status-error-surface: hsl(346 45% 17%);
+  --status-error-foreground: hsl(346 86% 84%);
+  --status-error-border: hsl(346 60% 38%);
+  --status-success-surface: hsl(158 45% 15%);
+  --status-success-foreground: hsl(158 70% 80%);
+  --status-success-border: hsl(158 55% 34%);
+  --status-warning-surface: hsl(38 45% 16%);
+  --status-warning-foreground: hsl(38 92% 80%);
+  --status-warning-border: hsl(38 55% 36%);
+  --status-info-surface: hsl(217 45% 17%);
+  --status-info-foreground: hsl(217 91% 82%);
+  --status-info-border: hsl(217 55% 38%);
 }
 
 /* ============================
@@ -490,4 +523,86 @@ html:not(.dark) .font-mono {
   background-color: #edf2f7;
   color: #334155;
   border-color: #e2e8f0;
+}
+
+/* Semantic alert surfaces used by user-facing status messages. */
+.status-surface {
+  border-style: solid;
+  border-width: 1px;
+}
+
+.status-surface-error {
+  background-color: var(--status-error-surface);
+  border-color: var(--status-error-border);
+  color: var(--status-error-foreground);
+}
+
+.status-surface-success {
+  background-color: var(--status-success-surface);
+  border-color: var(--status-success-border);
+  color: var(--status-success-foreground);
+}
+
+.status-surface-warning {
+  background-color: var(--status-warning-surface);
+  border-color: var(--status-warning-border);
+  color: var(--status-warning-foreground);
+}
+
+.status-surface-info {
+  background-color: var(--status-info-surface);
+  border-color: var(--status-info-border);
+  color: var(--status-info-foreground);
+}
+
+/* Toasts are intentionally opaque: a transient message must not blend into
+ * the page behind it. */
+.status-toast {
+  border: 1px solid transparent;
+  color: var(--status-toast-foreground);
+}
+
+.status-toast-error {
+  background-color: var(--status-toast-error);
+  border-color: #991b1b;
+}
+
+.status-toast-success {
+  background-color: var(--status-toast-success);
+  border-color: #065f46;
+}
+
+/* The light-theme compatibility bridge turns translucent legacy surfaces into
+ * pale semantic tints. Never leave white text on those surfaces. Solid action
+ * buttons (bg-*-500/600 without a slash) intentionally keep white text. */
+html:not(.dark) [class~="text-white"][class*="bg-gray-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-indigo-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-blue-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-purple-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-violet-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-green-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-emerald-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-teal-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-red-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-rose-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-pink-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-amber-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-orange-"][class*="/"] ,
+html:not(.dark) [class~="text-white"][class*="bg-yellow-"][class*="/"] {
+  color: var(--color-foreground) !important;
+}
+
+/* The same guard applies to legacy hover states on light gray surfaces. */
+html:not(.dark) [class~="hover:text-white"][class*="bg-gray-"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-indigo-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-blue-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-purple-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-violet-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-red-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-rose-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-pink-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-amber-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-orange-"][class*="/"]:hover,
+html:not(.dark) [class~="hover:text-white"][class*="bg-yellow-"][class*="/"]:hover {
+  color: var(--color-foreground) !important;
 }
