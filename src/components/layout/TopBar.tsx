@@ -108,12 +108,12 @@ export default function TopBar() {
             <div className="flex items-center gap-0.5">
               <Flame
                 size={18}
-                className={streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}
+                className={streak > 0 ? 'text-emerald-600' : 'text-muted-foreground'}
                 fill={streak > 0 ? 'currentColor' : 'none'}
               />
               <span className={cn(
                 'text-sm font-bold',
-                streak > 0 ? 'text-orange-500' : 'text-muted-foreground'
+                streak > 0 ? 'text-emerald-600' : 'text-muted-foreground'
               )}>
                 {streak}
               </span>
@@ -121,8 +121,8 @@ export default function TopBar() {
 
             {/* XP */}
             <div className="flex items-center gap-0.5">
-              <Zap size={16} className="text-yellow-500" fill="currentColor" />
-              <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
+              <Zap size={16} className="text-primary" fill="currentColor" />
+              <span className="text-sm font-bold text-primary">
                 {xp >= 1000 ? `${(xp / 1000).toFixed(1)}k` : xp}
               </span>
             </div>

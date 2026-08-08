@@ -1,10 +1,10 @@
 /*
- * EnglishUp - Clear & Elevated Design System
+ * EnglishUp - Calm Study Design System
  * Tailwind CSS v4 (CSS-first configuration)
- * Fonts: Inter (UI) + Lexend (Reading)
+ * Font: Inter (UI and reading)
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
@@ -16,71 +16,73 @@
    ============================ */
 @theme {
   /* Surface & Base Colors */
-  --color-background: hsl(220 20% 97%);
-  --color-foreground: hsl(222 47% 11%);
+  --color-background: #f4f6f8;
+  --color-foreground: #0f172a;
   
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222 47% 11%);
+  --color-card-foreground: #0f172a;
   --color-card-elevated: hsl(0 0% 100%);
 
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222 47% 11%);
+  --color-popover-foreground: #0f172a;
 
   /* Brand Primary & Accents */
-  --color-primary: hsl(221 83% 53%);
+  --color-primary: #2563eb;
   --color-primary-foreground: hsl(0 0% 100%);
 
-  --color-secondary: hsl(215 28% 93%);
-  --color-secondary-foreground: hsl(222 47% 11%);
+  --color-secondary: #edf2f7;
+  --color-secondary-foreground: #0f172a;
 
-  --color-muted: hsl(215 20% 93%);
-  --color-muted-foreground: hsl(217 19% 38%);
+  --color-muted: #edf2f7;
+  --color-muted-foreground: #475569;
 
-  --color-accent: hsl(217 91% 95%);
-  --color-accent-foreground: hsl(221 83% 45%);
+  --color-accent: #eaf2ff;
+  --color-accent-foreground: #1d4ed8;
 
   /* Functional Status Colors */
-  --color-destructive: hsl(346 84% 53%);
+  /* Darkened one step from coral-500 so white action labels meet WCAG AA. */
+  --color-destructive: #dc2626;
   --color-destructive-foreground: hsl(0 0% 100%);
 
-  --color-success: hsl(158 75% 40%);
+  /* Muted emerald with sufficient contrast for white progress/action text. */
+  --color-success: #047857;
   --color-success-foreground: hsl(0 0% 100%);
 
-  --color-warning: hsl(38 92% 50%);
+  --color-warning: #a16207;
   --color-warning-foreground: hsl(0 0% 100%);
 
-  --color-gold-400: hsl(43 96% 56%);
-  --color-gold-500: hsl(38 92% 50%);
+  --color-gold-400: #a16207;
+  --color-gold-500: #854d0e;
 
   /* Borders & Dividers - High Contrast */
-  --color-border: hsl(220 13% 84%);
-  --color-border-strong: hsl(220 16% 72%);
-  --color-input: hsl(220 13% 84%);
-  --color-ring: hsl(221 83% 53%);
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-input: #e2e8f0;
+  --color-ring: #2563eb;
 
   /* Brand Scale */
-  --color-brand-50: hsl(214 100% 97%);
-  --color-brand-100: hsl(214 95% 93%);
-  --color-brand-500: hsl(221 83% 53%);
-  --color-brand-600: hsl(224 76% 48%);
-  --color-brand-700: hsl(226 71% 40%);
-  --color-brand-800: hsl(224 64% 33%);
-  --color-brand-900: hsl(226 55% 21%);
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
 
   /* Typography */
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-reading: 'Lexend', system-ui, sans-serif;
+  --font-reading: 'Inter', system-ui, sans-serif;
 
   /* Border Radius */
-  --radius: 0.875rem;
-  --radius-sm: calc(0.875rem - 4px);
-  --radius-md: calc(0.875rem - 2px);
-  --radius-lg: 0.875rem;
+  --radius: 1rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1rem;
   --radius-xl: 1.25rem;
 
   /* Shadows - Clear Depth */
-  --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-elevated: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-elevated: 0 8px 20px rgba(15, 23, 42, 0.07);
 
   /* Animations */
   --animate-fade-in: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -161,6 +163,7 @@ html {
   text-size-adjust: 100%;
   scroll-behavior: smooth;
   min-height: 100%;
+  color-scheme: light;
 }
 
 body {
@@ -208,14 +211,11 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Gradient Text nổi bật */
 .text-gradient {
-  background: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 60%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .bg-brand-gradient {
-  background: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(224 76% 45%) 100%);
+  background: var(--color-primary);
 }
 
 /* Flashcard 3D flip */
@@ -306,9 +306,9 @@ html:not(.dark) .text-gray-400 { color: var(--color-muted-foreground) !important
 html:not(.dark) .text-gray-500,
 html:not(.dark) .text-gray-600 { color: hsl(217 19% 38%) !important; }
 /* Chữ chính trên các section gray chuyển sang foreground; màu chữ trên nút màu giữ trắng. */
-html:not(.dark) .bg-gray-950 .text-white,
-html:not(.dark) .bg-gray-900 .text-white,
-html:not(.dark) .bg-gray-800 .text-white { color: var(--color-foreground) !important; }
+html:not(.dark) .bg-gray-950 .text-white:not([class*="bg-"]),
+html:not(.dark) .bg-gray-900 .text-white:not([class*="bg-"]),
+html:not(.dark) .bg-gray-800 .text-white:not([class*="bg-"]) { color: var(--color-foreground) !important; }
 html:not(.dark) .bg-indigo-500 .text-white,
 html:not(.dark) .bg-indigo-600 .text-white,
 html:not(.dark) .bg-emerald-600 .text-white,
@@ -317,3 +317,169 @@ html:not(.dark) .bg-gradient-to-r .text-white,
 html:not(.dark) .bg-gradient-to-br .text-white { color: white !important; }
 html:not(.dark) .from-gray-900 .text-white,
 html:not(.dark) .from-gray-800 .text-white { color: var(--color-foreground) !important; }
+
+/*
+ * Light-theme bridge for the learning modules written before the design system.
+ * It deliberately collapses legacy purple/pink/yellow gradients to a restrained
+ * indigo, sage, coral and warm-brown hierarchy. This keeps every route calm
+ * while the modules are progressively migrated to semantic utility classes.
+ */
+html:not(.dark) [class~="text-white"][class*="bg-gray-"] { color: var(--color-foreground) !important; }
+html:not(.dark) [class~="text-white"][class*="bg-indigo-"],
+html:not(.dark) [class~="text-white"][class*="bg-blue-"],
+html:not(.dark) [class~="text-white"][class*="bg-purple-"],
+html:not(.dark) [class~="text-white"][class*="bg-violet-"],
+html:not(.dark) [class~="text-white"][class*="bg-emerald-"],
+html:not(.dark) [class~="text-white"][class*="bg-green-"],
+html:not(.dark) [class~="text-white"][class*="bg-teal-"],
+html:not(.dark) [class~="text-white"][class*="bg-red-"],
+html:not(.dark) [class~="text-white"][class*="bg-rose-"],
+html:not(.dark) [class~="text-white"][class*="bg-pink-"],
+html:not(.dark) [class~="text-white"][class*="bg-amber-"],
+html:not(.dark) [class~="text-white"][class*="bg-orange-"],
+html:not(.dark) [class~="text-white"][class*="bg-gradient-to-"] { color: #fff !important; }
+html:not(.dark) .bg-gray-950 [class*="bg-gradient-to-"] .text-white,
+html:not(.dark) .bg-gray-900 [class*="bg-gradient-to-"] .text-white,
+html:not(.dark) .bg-gray-800 [class*="bg-gradient-to-"] .text-white,
+html:not(.dark) .bg-gray-950 [class*="bg-indigo-"] .text-white,
+html:not(.dark) .bg-gray-900 [class*="bg-indigo-"] .text-white,
+html:not(.dark) .bg-gray-800 [class*="bg-indigo-"] .text-white,
+html:not(.dark) .bg-gray-950 [class*="bg-emerald-"] .text-white,
+html:not(.dark) .bg-gray-900 [class*="bg-emerald-"] .text-white,
+html:not(.dark) .bg-gray-800 [class*="bg-emerald-"] .text-white,
+html:not(.dark) .bg-gray-950 [class*="bg-red-"] .text-white,
+html:not(.dark) .bg-gray-900 [class*="bg-red-"] .text-white,
+html:not(.dark) .bg-gray-800 [class*="bg-red-"] .text-white { color: #fff !important; }
+
+/* Never use decorative gradients in study flows: one surface, one meaning. */
+html:not(.dark) [class*="bg-gradient-to-"] { background-image: none !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-gray-"] { background-color: var(--color-card) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-brand-"] { background-color: var(--color-primary) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-indigo-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-indigo-6"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-indigo-7"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-indigo-8"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-purple-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-purple-6"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-violet-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-violet-6"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-blue-5"] { background-color: var(--color-primary) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-emerald-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-emerald-6"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-green-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-teal-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-teal-6"] { background-color: var(--color-success) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-rose-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-rose-6"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-pink-5"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-pink-6"] { background-color: var(--color-destructive) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-amber-"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-orange-"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-yellow-"] { background-color: var(--color-warning) !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-indigo-9"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-purple-9"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-violet-9"] { background-color: #eff6ff !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-emerald-9"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-teal-9"] { background-color: #ecfdf5 !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-rose-9"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-pink-9"] { background-color: #fef2f2 !important; }
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-amber-9"],
+html:not(.dark) [class*="bg-gradient-to-"][class*="from-orange-9"] { background-color: #fffbeb !important; }
+
+/* Status surfaces use very light tints; color is reserved for meaning and actions. */
+html:not(.dark) [class*="bg-indigo-"][class*="/"],
+html:not(.dark) [class*="bg-blue-"][class*="/"],
+html:not(.dark) [class*="bg-purple-"][class*="/"],
+html:not(.dark) [class*="bg-violet-"][class*="/"] { background-color: #eaf2ff !important; }
+html:not(.dark) [class*="bg-green-"][class*="/"],
+html:not(.dark) [class*="bg-emerald-"][class*="/"],
+html:not(.dark) [class*="bg-teal-"][class*="/"] { background-color: #ecfdf5 !important; }
+html:not(.dark) [class*="bg-red-"][class*="/"],
+html:not(.dark) [class*="bg-rose-"][class*="/"],
+html:not(.dark) [class*="bg-pink-"][class*="/"] { background-color: #fef2f2 !important; }
+html:not(.dark) [class*="bg-amber-"][class*="/"],
+html:not(.dark) [class*="bg-orange-"][class*="/"],
+html:not(.dark) [class*="bg-yellow-"][class*="/"] { background-color: #fffbeb !important; }
+html:not(.dark) [class*="bg-indigo-9"],
+html:not(.dark) [class*="bg-purple-9"],
+html:not(.dark) [class*="bg-violet-9"] { background-color: #eff6ff !important; }
+html:not(.dark) [class*="bg-emerald-9"],
+html:not(.dark) [class*="bg-teal-9"] { background-color: #ecfdf5 !important; }
+html:not(.dark) [class*="bg-rose-9"],
+html:not(.dark) [class*="bg-pink-9"] { background-color: #fef2f2 !important; }
+html:not(.dark) [class*="bg-amber-9"],
+html:not(.dark) [class*="bg-orange-9"],
+html:not(.dark) [class*="bg-yellow-9"] { background-color: #fffbeb !important; }
+
+/* Legacy hue families become accessible semantic text and border colors. */
+html:not(.dark) [class*="text-indigo-"],
+html:not(.dark) [class*="text-blue-"],
+html:not(.dark) [class*="text-purple-"],
+html:not(.dark) [class*="text-violet-"] { color: #1d4ed8 !important; }
+html:not(.dark) [class*="text-green-"],
+html:not(.dark) [class*="text-emerald-"],
+html:not(.dark) [class*="text-teal-"] { color: #047857 !important; }
+html:not(.dark) [class*="text-red-"],
+html:not(.dark) [class*="text-rose-"],
+html:not(.dark) [class*="text-pink-"] { color: #dc2626 !important; }
+html:not(.dark) [class*="text-amber-"],
+html:not(.dark) [class*="text-orange-"],
+html:not(.dark) [class*="text-yellow-"] { color: #a16207 !important; }
+html:not(.dark) [class*="border-indigo-"],
+html:not(.dark) [class*="border-blue-"],
+html:not(.dark) [class*="border-purple-"],
+html:not(.dark) [class*="border-violet-"] { border-color: #bfdbfe !important; }
+html:not(.dark) [class*="border-green-"],
+html:not(.dark) [class*="border-emerald-"],
+html:not(.dark) [class*="border-teal-"] { border-color: #a7f3d0 !important; }
+html:not(.dark) [class*="border-red-"],
+html:not(.dark) [class*="border-rose-"],
+html:not(.dark) [class*="border-pink-"] { border-color: #fecaca !important; }
+html:not(.dark) [class*="border-amber-"],
+html:not(.dark) [class*="border-orange-"],
+html:not(.dark) [class*="border-yellow-"] { border-color: #fde68a !important; }
+
+/* Solid legacy utilities are normalized too (Tailwind's Indigo is too violet here). */
+html:not(.dark) [class~="bg-indigo-500"],
+html:not(.dark) [class~="bg-indigo-600"],
+html:not(.dark) [class~="bg-indigo-700"],
+html:not(.dark) [class~="bg-blue-500"],
+html:not(.dark) [class~="bg-blue-600"],
+html:not(.dark) [class~="bg-purple-500"],
+html:not(.dark) [class~="bg-purple-600"],
+html:not(.dark) [class~="bg-purple-700"],
+html:not(.dark) [class~="bg-violet-500"],
+html:not(.dark) [class~="bg-violet-600"],
+html:not(.dark) [class~="bg-violet-700"] { background-color: var(--color-primary) !important; }
+html:not(.dark) [class~="bg-green-500"],
+html:not(.dark) [class~="bg-green-600"],
+html:not(.dark) [class~="bg-emerald-500"],
+html:not(.dark) [class~="bg-emerald-600"],
+html:not(.dark) [class~="bg-teal-500"],
+html:not(.dark) [class~="bg-teal-600"] { background-color: var(--color-success) !important; }
+html:not(.dark) [class~="bg-red-500"],
+html:not(.dark) [class~="bg-red-600"],
+html:not(.dark) [class~="bg-rose-500"],
+html:not(.dark) [class~="bg-rose-600"],
+html:not(.dark) [class~="bg-pink-500"],
+html:not(.dark) [class~="bg-pink-600"] { background-color: var(--color-destructive) !important; }
+html:not(.dark) [class~="bg-amber-500"],
+html:not(.dark) [class~="bg-amber-600"],
+html:not(.dark) [class~="bg-orange-500"],
+html:not(.dark) [class~="bg-orange-600"],
+html:not(.dark) [class~="bg-yellow-500"],
+html:not(.dark) [class~="bg-yellow-600"] { background-color: var(--color-warning) !important; }
+html:not(.dark) [class*="shadow-indigo-"],
+html:not(.dark) [class*="shadow-blue-"],
+html:not(.dark) [class*="shadow-purple-"],
+html:not(.dark) [class*="shadow-violet-"],
+html:not(.dark) [class*="shadow-pink-"],
+html:not(.dark) [class*="shadow-rose-"] { box-shadow: var(--shadow-card) !important; }
+
+/* IPA is a focused, quiet reading surface instead of a dark code block. */
+html:not(.dark) code,
+html:not(.dark) .font-mono {
+  background-color: #edf2f7;
+  color: #334155;
+  border-color: #e2e8f0;
+}

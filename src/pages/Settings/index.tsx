@@ -565,7 +565,7 @@ export default function Settings() {
 
           {/* App version */}
           <SettingRow label="Phiên bản ứng dụng" sublabel="EnglishUp">
-            <span className="text-sm text-gray-500 font-mono">v0.1.0</span>
+            <span className="text-sm text-gray-500 font-mono">v0.1.2</span>
           </SettingRow>
           <a
             href="/download"

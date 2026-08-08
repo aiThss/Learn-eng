@@ -64,7 +64,7 @@ interface SettingsStore {
 }
 
 const defaultSettings: UserSettings = {
-  darkMode: true, // Mặc định dark mode
+  darkMode: false, // Light mode là mặc định để học lâu không mỏi mắt
   fontSize: 'medium',
   soundEnabled: true,
   notificationsEnabled: true,
@@ -95,6 +95,19 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: 'englishup-settings',
       storage: createJSONStorage(() => localStorage),
+      version: 2,
+      // Chuyển người dùng cũ sang light theme một lần; sau đó vẫn tôn trọng lựa chọn cá nhân.
+      migrate: (persistedState) => {
+        const persisted = persistedState as Partial<SettingsStore>
+        return {
+          ...persisted,
+          settings: {
+            ...defaultSettings,
+            ...persisted.settings,
+            darkMode: false,
+          },
+        }
+      },
     }
   )
 )

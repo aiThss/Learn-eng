@@ -52,7 +52,7 @@ function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(99,102,241,0.15)"
+          stroke="rgba(37,99,235,0.15)"
           strokeWidth={strokeWidth}
         />
         {/* Progress */}
@@ -61,19 +61,13 @@ function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="url(#progressGrad)"
+          stroke="#2563eb"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           style={{ transition: 'stroke-dashoffset 0.8s ease' }}
         />
-        <defs>
-          <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#a855f7" />
-          </linearGradient>
-        </defs>
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         {children}
@@ -99,8 +93,8 @@ function QuickCard({
       onClick={onClick}
       className={cn(
         'flex flex-col items-center gap-2 p-4 rounded-2xl',
-        'bg-gray-800/60 border border-gray-700/50',
-        'hover:border-indigo-500/50 hover:bg-gray-800',
+        'bg-card border border-border shadow-card',
+        'hover:border-primary/40 hover:bg-accent',
         'transition-all duration-200 active:scale-95 w-full'
       )}
     >
@@ -125,11 +119,11 @@ function StatCard({
   gradient: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-gray-800/60 border border-gray-700/40 flex-1">
+    <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-card border border-border shadow-card flex-1">
       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', gradient)}>
         <Icon className="w-4 h-4 text-white" />
       </div>
-      <span className="text-lg font-black text-white">{value}</span>
+      <span className="text-lg font-black text-foreground">{value}</span>
       <span className="text-[10px] text-gray-400 text-center leading-tight">{label}</span>
     </div>
   )
@@ -173,27 +167,27 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pb-24">
+    <div className="min-h-screen bg-background text-foreground pb-24">
       {/* ── Header / Greeting ── */}
-      <div className="bg-gradient-to-b from-gray-900 to-gray-950 px-5 pt-12 pb-6">
+      <div className="px-5 pt-12 pb-6 border-b border-border bg-background">
         <p className="text-gray-400 text-sm mb-1">
           {getGreeting().replace(' 👋', '')}
         </p>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white">
+            <h1 className="text-2xl font-black text-foreground">
               {user?.name ?? 'Bạn'}{' '}
               <span className="wave inline-block">👋</span>
             </h1>
-            <p className="text-indigo-400 text-sm font-medium mt-0.5">
+            <p className="text-primary text-sm font-medium mt-0.5">
               {phaseLabels[currentPhase]} · Tuần {currentWeek}
             </p>
           </div>
 
           {/* IELTS Badge */}
-          <div className="flex flex-col items-center px-3 py-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-            <Star className="w-4 h-4 text-amber-400 mb-0.5" />
-            <span className="text-lg font-black text-amber-400">{ieltsEst}</span>
+          <div className="flex flex-col items-center px-3 py-2 rounded-xl bg-accent border border-primary/20">
+            <Star className="w-4 h-4 text-primary mb-0.5" />
+            <span className="text-lg font-black text-primary">{ieltsEst}</span>
             <span className="text-[9px] text-amber-400/70 font-semibold">IELTS est.</span>
           </div>
         </div>
@@ -203,18 +197,18 @@ export default function Dashboard() {
         {/* ── Mục tiêu hàng ngày + Streak ── */}
         <div className="flex gap-4">
           {/* Circular goal progress */}
-          <div className="flex-1 bg-gray-800/60 border border-gray-700/50 rounded-2xl p-4 flex items-center gap-4">
+          <div className="flex-1 bg-card border border-border shadow-card rounded-2xl p-4 flex items-center gap-4">
             <CircularProgress percent={goalPercent} size={72} strokeWidth={7}>
-              <span className="text-sm font-black text-white">{goalPercent}%</span>
+              <span className="text-sm font-black text-foreground">{goalPercent}%</span>
             </CircularProgress>
             <div>
               <p className="text-xs text-gray-400 mb-1">Mục tiêu hôm nay</p>
-              <p className="text-base font-bold text-white">
+              <p className="text-base font-bold text-foreground">
                 {minutesToday}/{dailyGoal} phút
               </p>
-              <div className="mt-1.5 w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
+              <div className="mt-1.5 w-full h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700"
+                  className="h-full bg-primary rounded-full transition-all duration-700"
                   style={{ width: `${goalPercent}%` }}
                 />
               </div>
@@ -222,16 +216,16 @@ export default function Dashboard() {
           </div>
 
           {/* Streak */}
-          <div className="bg-gray-800/60 border border-gray-700/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 min-w-[90px]">
+          <div className="bg-card border border-border shadow-card rounded-2xl p-4 flex flex-col items-center justify-center gap-1 min-w-[90px]">
             <Flame
               className={cn(
                 'w-8 h-8',
                 (progress?.currentStreak ?? 0) > 0
-                  ? 'text-orange-400 animate-[pulse_1.5s_ease-in-out_infinite]'
-                  : 'text-gray-500'
+                  ? 'text-emerald-600'
+                  : 'text-muted-foreground'
               )}
             />
-            <span className="text-2xl font-black text-white">
+            <span className="text-2xl font-black text-foreground">
               {progress?.currentStreak ?? 0}
             </span>
             <span className="text-[10px] text-gray-400 font-medium">ngày liên tục</span>
@@ -244,19 +238,19 @@ export default function Dashboard() {
             icon={BookOpen}
             value={formatNumber(progress?.vocabularyCount ?? 0)}
             label="Từ đã học"
-            gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+            gradient="bg-primary"
           />
           <StatCard
             icon={Brain}
             value={progress?.grammarLessonsCompleted ?? 0}
             label="Bài ngữ pháp"
-            gradient="bg-gradient-to-br from-purple-500 to-pink-600"
+            gradient="bg-primary"
           />
           <StatCard
             icon={Zap}
             value={xpToday}
             label="XP hôm nay"
-            gradient="bg-gradient-to-br from-amber-500 to-orange-500"
+            gradient="bg-emerald-600"
           />
         </div>
 
@@ -269,9 +263,8 @@ export default function Dashboard() {
             onClick={() => navigate('/lesson/today')}
             className={cn(
               'w-full text-left rounded-2xl overflow-hidden',
-              'bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-gray-900',
-              'border border-indigo-500/30',
-              'hover:border-indigo-500/60 hover:shadow-lg hover:shadow-indigo-500/10',
+              'bg-card border border-border shadow-card',
+              'hover:border-primary/50 hover:shadow-elevated',
               'transition-all duration-200 active:scale-[0.98]'
             )}
           >
@@ -282,22 +275,22 @@ export default function Dashboard() {
                     <Calendar className="w-3 h-3" />
                     TUẦN {currentWeek}
                   </span>
-                  <h3 className="text-lg font-black text-white">
+                  <h3 className="text-lg font-black text-foreground">
                     Bài học ngày {new Date().getDate()}
                   </h3>
                   <p className="text-gray-400 text-sm mt-1">
                     10 từ mới · 1 ngữ pháp · Luyện nghe
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                  <BookMarked className="w-6 h-6 text-indigo-400" />
+                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+                  <BookMarked className="w-6 h-6 text-primary" />
                 </div>
               </div>
 
               {/* Tiến độ bài học */}
               <div className="flex items-center gap-3 mt-4">
-                <div className="flex-1 h-2 bg-gray-700/60 rounded-full overflow-hidden">
-                  <div className="h-full w-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full w-0 bg-primary rounded-full" />
                 </div>
                 <span className="text-xs text-gray-400">0/4</span>
               </div>
@@ -308,7 +301,7 @@ export default function Dashboard() {
                   <Clock className="w-3.5 h-3.5" />
                   <span>~20 phút</span>
                 </div>
-                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl font-bold text-sm">
+                <div className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm">
                   <Play className="w-4 h-4" />
                   Bắt đầu
                 </div>
@@ -323,18 +316,17 @@ export default function Dashboard() {
             onClick={() => navigate('/vocabulary')}
             className={cn(
               'w-full text-left p-4 rounded-2xl',
-              'bg-gradient-to-r from-amber-900/40 to-orange-900/30',
-              'border border-amber-500/30',
-              'hover:border-amber-500/60 transition-all duration-200 active:scale-[0.98]',
+              'bg-emerald-50 border border-emerald-200',
+              'hover:border-emerald-400 transition-all duration-200 active:scale-[0.98]',
               'flex items-center gap-4'
             )}
           >
-            <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-6 h-6 text-amber-400" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <Brain className="w-6 h-6 text-emerald-700" />
             </div>
             <div className="flex-1">
               <p className="text-xs text-amber-400/70 font-semibold mb-0.5">SRS ÔN TẬP</p>
-              <p className="text-white font-bold">
+              <p className="text-foreground font-bold">
                 {dueCardsCount} thẻ cần ôn hôm nay
               </p>
               <p className="text-gray-400 text-xs mt-0.5">Đừng để quên nhé!</p>
@@ -352,25 +344,25 @@ export default function Dashboard() {
             <QuickCard
               icon={BookOpen}
               label="Ngữ pháp"
-              color="bg-gradient-to-br from-blue-500 to-indigo-600"
+              color="bg-primary"
               onClick={() => navigate('/grammar')}
             />
             <QuickCard
               icon={Headphones}
               label="Nghe"
-              color="bg-gradient-to-br from-teal-500 to-cyan-600"
+              color="bg-emerald-600"
               onClick={() => navigate('/listening')}
             />
             <QuickCard
               icon={Mic}
               label="Nói"
-              color="bg-gradient-to-br from-pink-500 to-rose-600"
+              color="bg-primary"
               onClick={() => navigate('/speaking')}
             />
             <QuickCard
               icon={BookMarked}
               label="Đọc"
-              color="bg-gradient-to-br from-amber-500 to-orange-500"
+              color="bg-primary"
               onClick={() => navigate('/reading-writing')}
             />
           </div>
@@ -393,26 +385,26 @@ export default function Dashboard() {
             {recentDays.map((day, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/40 border border-gray-700/30"
+                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
               >
                 <div
                   className={cn(
                     'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
                     day.done
-                      ? 'bg-green-500/20'
-                      : 'bg-gray-700/50'
+                      ? 'bg-emerald-100'
+                      : 'bg-muted'
                   )}
                 >
                   {day.done ? (
-                    <TrendingUp className="w-4 h-4 text-green-400" />
+                    <TrendingUp className="w-4 h-4 text-emerald-700" />
                   ) : (
                     <Target className="w-4 h-4 text-gray-500" />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">{day.label}</p>
+                  <p className="text-sm font-semibold text-foreground">{day.label}</p>
                 </div>
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className="flex items-center gap-1 text-primary">
                   <Zap className="w-3.5 h-3.5" />
                   <span className="text-sm font-bold">{day.xp} XP</span>
                 </div>
@@ -426,13 +418,13 @@ export default function Dashboard() {
           onClick={() => navigate('/roadmap')}
           className={cn(
             'w-full text-left p-4 rounded-2xl',
-            'bg-gray-800/60 border border-gray-700/50',
-            'hover:border-indigo-500/40 transition-all duration-200 active:scale-[0.98]',
+            'bg-card border border-border shadow-card',
+            'hover:border-primary/40 transition-all duration-200 active:scale-[0.98]',
             'flex items-center gap-4'
           )}
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-            <Target className="w-6 h-6 text-indigo-400" />
+          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+            <Target className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
             <p className="text-xs text-gray-400 font-semibold mb-0.5">LỘ TRÌNH HỌC</p>

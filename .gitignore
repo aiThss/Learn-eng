@@ -3,6 +3,9 @@ android/.gradle/
 android/build/
 android/app/build/
 android/capacitor-cordova-android-plugins/
+releases/*.idsig
+releases/EnglishUp-v0.1.1.apk
+releases/EnglishUp-v0.1.1.sha256
 ios/
 .env
 .env.local
