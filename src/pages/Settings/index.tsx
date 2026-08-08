@@ -31,6 +31,8 @@ import { cn } from '@/lib/utils'
 import { createInitialProgress, useLessonStore, useSettingsStore, useUserStore, useProgressStore } from '@/store'
 import { callAI } from '@/services/ai/gemini'
 import { db } from '@/services/db/schema'
+import { syncDailyStudyReminder } from '@/services/notifications/dailyReminder'
+import { APP_RELEASE } from '@/config/release'
 
 // ========================
 // Helper: Section header
@@ -84,19 +86,22 @@ function Toggle({
   value,
   onChange,
   label,
+  disabled = false,
 }: {
   value: boolean
   onChange: (v: boolean) => void
   label: string
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={() => onChange(!value)}
+      disabled={disabled}
       aria-label={label}
       aria-pressed={value}
       className={cn(
-        'relative w-12 h-6 rounded-full transition-all duration-300',
+        'relative w-12 h-6 rounded-full transition-all duration-300 disabled:cursor-wait disabled:opacity-60',
         value ? 'bg-indigo-500' : 'bg-gray-600'
       )}
     >
@@ -186,6 +191,7 @@ export default function Settings() {
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [saved, setSaved] = useState(false)
+  const [updatingReminder, setUpdatingReminder] = useState(false)
 
   // Đồng bộ API key input
   useEffect(() => {
@@ -234,6 +240,59 @@ export default function Settings() {
     setSaved(true)
     showToast('Đã lưu cài đặt!')
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  // Nhắc học chỉ được đánh dấu là bật sau khi Android đã cấp quyền và lịch được tạo thành công.
+  const handleNotificationChange = async (enabled: boolean) => {
+    setUpdatingReminder(true)
+
+    try {
+      const result = await syncDailyStudyReminder(
+        { notificationsEnabled: enabled, studyReminderTime: settings.studyReminderTime },
+        enabled,
+      )
+
+      if (!enabled) {
+        updateSettings({ notificationsEnabled: false })
+        showToast('Đã tắt nhắc học hằng ngày')
+        return
+      }
+
+      if (result === 'scheduled') {
+        updateSettings({ notificationsEnabled: true })
+        showToast(`Đã đặt nhắc học lúc ${settings.studyReminderTime}`)
+        return
+      }
+
+      updateSettings({ notificationsEnabled: false })
+      const message =
+        result === 'unsupported'
+          ? 'Nhắc học tự động hiện có trong APK Android'
+          : result === 'permission-denied'
+            ? 'Bạn cần cho phép thông báo trong cài đặt Android'
+            : 'Không thể đặt lịch nhắc học, hãy thử lại'
+      showToast(message, 'error')
+    } finally {
+      setUpdatingReminder(false)
+    }
+  }
+
+  const handleReminderTimeChange = async (time: string) => {
+    updateSettings({ studyReminderTime: time })
+    if (!settings.notificationsEnabled) return
+
+    const result = await syncDailyStudyReminder({
+      notificationsEnabled: true,
+      studyReminderTime: time,
+    })
+
+    if (result === 'scheduled') {
+      showToast(`Đã đổi giờ nhắc sang ${time}`)
+    } else if (result === 'permission-required' || result === 'unsupported') {
+      // Các bản cũ từng lưu công tắc là bật dù chưa có notification native.
+      updateSettings({ notificationsEnabled: false })
+      showToast('Bật lại Thông báo để cấp quyền nhắc học', 'error')
+    }
   }
 
   // ── Reset tiến trình ──
@@ -348,7 +407,7 @@ export default function Settings() {
               <input
                 type="time"
                 value={settings.studyReminderTime}
-                onChange={(e) => updateSettings({ studyReminderTime: e.target.value })}
+                onChange={(e) => void handleReminderTimeChange(e.target.value)}
                 className="bg-gray-700/60 border border-gray-600/50 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-indigo-500/60"
               />
             </div>
@@ -532,14 +591,15 @@ export default function Settings() {
           {/* Notifications */}
           <SettingRow
             label="Thông báo"
-            sublabel={settings.notificationsEnabled ? 'Nhận nhắc nhở học tập' : 'Tắt thông báo'}
+            sublabel={settings.notificationsEnabled ? `Nhắc học hằng ngày lúc ${settings.studyReminderTime}` : 'Bật để Android nhắc bạn học mỗi ngày'}
           >
             <div className="flex items-center gap-2">
               <Bell className={cn('w-4 h-4', settings.notificationsEnabled ? 'text-amber-400' : 'text-gray-500')} />
               <Toggle
                 value={settings.notificationsEnabled}
-                onChange={(v) => updateSettings({ notificationsEnabled: v })}
+                onChange={(v) => void handleNotificationChange(v)}
                 label="Bật hoặc tắt thông báo"
+                disabled={updatingReminder}
               />
             </div>
           </SettingRow>
@@ -565,7 +625,7 @@ export default function Settings() {
 
           {/* App version */}
           <SettingRow label="Phiên bản ứng dụng" sublabel="EnglishUp">
-            <span className="text-sm text-gray-500 font-mono">v0.1.3</span>
+            <span className="text-sm text-gray-500 font-mono">v{APP_RELEASE.version}</span>
           </SettingRow>
           <a
             href="/download"

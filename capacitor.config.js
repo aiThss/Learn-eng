@@ -1,3 +1,4 @@
+/// <reference types="@capacitor/local-notifications" />
 const config = {
     appId: 'com.englishup.app',
     appName: 'EnglishUp',
@@ -19,6 +20,9 @@ const config = {
         StatusBar: {
             style: 'LIGHT',
             backgroundColor: '#0f172a',
+        },
+        LocalNotifications: {
+            iconColor: '#2563EB',
         },
     },
 };

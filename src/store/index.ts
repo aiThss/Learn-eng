@@ -67,7 +67,8 @@ const defaultSettings: UserSettings = {
   darkMode: false, // Light mode là mặc định để học lâu không mỏi mắt
   fontSize: 'medium',
   soundEnabled: true,
-  notificationsEnabled: true,
+  // Chỉ bật sau thao tác chủ động để Android xin quyền đúng ngữ cảnh.
+  notificationsEnabled: false,
   studyReminderTime: '20:00',
   geminiApiKey: '',
 }

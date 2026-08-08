@@ -5,12 +5,16 @@
 import { useEffect } from 'react'
 import AppRouter from '@/routes/AppRouter'
 import { createInitialProgress, useLessonStore, useProgressStore, useSettingsStore, useUserStore } from '@/store'
+import UpdateChecker from '@/components/updates/UpdateChecker'
+import { restoreDailyStudyReminder } from '@/services/notifications/dailyReminder'
 
 export default function App() {
   const { settings } = useSettingsStore()
   const { user } = useUserStore()
   const { setPhase, setWeek } = useLessonStore()
   const { progress, setProgress } = useProgressStore()
+  const notificationsEnabled = settings.notificationsEnabled
+  const studyReminderTime = settings.studyReminderTime
 
   // Đồng bộ dark mode với document class
   useEffect(() => {
@@ -25,6 +29,11 @@ export default function App() {
     root.style.fontSize = settings.fontSize === 'small' ? '15px' : settings.fontSize === 'large' ? '17px' : '16px'
   }, [settings.darkMode, settings.fontSize])
 
+  // Chỉ khôi phục lịch đã được người học cho phép; không hiện popup quyền lúc vừa mở app.
+  useEffect(() => {
+    void restoreDailyStudyReminder({ notificationsEnabled, studyReminderTime })
+  }, [notificationsEnabled, studyReminderTime])
+
   // Migration an toàn cho dữ liệu cũ: phase/week trong user là nguồn chuẩn.
   // Nhờ vậy bản nâng cấp không đưa người học đã placement vào lại Phase A0.
   useEffect(() => {
@@ -36,5 +45,10 @@ export default function App() {
     }
   }, [progress, setPhase, setProgress, setWeek, user])
 
-  return <AppRouter />
+  return (
+    <>
+      <AppRouter />
+      <UpdateChecker />
+    </>
+  )
 }

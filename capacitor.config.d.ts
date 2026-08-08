@@ -20,6 +20,9 @@ declare const config: {
             style: string;
             backgroundColor: string;
         };
+        LocalNotifications: {
+            iconColor: string;
+        };
     };
 };
 export default config;

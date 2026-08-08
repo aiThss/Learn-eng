@@ -102,7 +102,7 @@ export default function TopBar() {
         {title}
       </h1>
 
-      {/* Phải: Streak + XP hoặc Settings */}
+      {/* Phải: Streak + XP; Cài đặt luôn có mặt, kể cả ở Dashboard. */}
       <div className="flex min-w-0 items-center justify-end">
         {isHome ? (
           <div className="flex items-center gap-2">
@@ -128,12 +128,20 @@ export default function TopBar() {
                 {xp >= 1000 ? `${(xp / 1000).toFixed(1)}k` : xp}
               </span>
             </div>
+            <button
+              id="btn-settings-topbar"
+              onClick={() => navigate('/settings')}
+              className="-mr-2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Cài đặt"
+            >
+              <Settings size={20} strokeWidth={1.8} />
+            </button>
           </div>
         ) : (
           <button
             id="btn-settings-topbar"
             onClick={() => navigate('/settings')}
-            className="p-2 -mr-2 rounded-xl hover:bg-muted transition-colors"
+            className="-mr-2 flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Cài đặt"
           >
             <Settings size={20} strokeWidth={1.8} />
