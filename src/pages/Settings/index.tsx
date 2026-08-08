@@ -131,9 +131,9 @@ function ConfirmDialog({
         <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-7 h-7 text-red-400" />
         </div>
-        <h3 className="text-lg font-black text-white text-center mb-2">Reset tiến trình học?</h3>
+        <h3 className="text-lg font-black text-white text-center mb-2">Reset tiến trình?</h3>
         <p className="text-sm text-gray-400 text-center mb-6 leading-relaxed">
-          Chỉ xóa tiến độ học tập, từ vựng đã học và điểm số. Hồ sơ, tên, avatar và cài đặt của bạn vẫn được giữ nguyên.
+          Toàn bộ tiến độ học tập, từ vựng đã học, và điểm số sẽ bị xóa vĩnh viễn. Bạn chắc chắn?
         </p>
         <div className="flex gap-3">
           <button
@@ -146,7 +146,7 @@ function ConfirmDialog({
             onClick={onConfirm}
             className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition-colors"
           >
-            Reset tiến trình
+            Xóa tất cả
           </button>
         </div>
       </div>
