@@ -4,6 +4,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import { BookOpen, List, LayoutGrid, ChevronLeft, ChevronRight, Star, TrendingUp, Clock, CheckCircle2, XCircle, Minus } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useLessonStore, useProgressStore, useUserStore } from '@/store'
 import type { SRSCard, VocabWord } from '@/types'
 import { cn } from '@/lib/utils'
@@ -49,12 +50,47 @@ interface FlashcardProps {
   onFlip: () => void
 }
 
+const PART_OF_SPEECH_LABELS: Record<string, string> = {
+  interjection: 'Thán từ',
+  phrase: 'Cụm từ',
+  adverb: 'Trạng từ',
+  noun: 'Danh từ',
+  adjective: 'Tính từ',
+}
+
+const TAG_LABELS: Record<string, string> = {
+  greeting: 'chào_hỏi',
+  polite: 'lịch_sự',
+  basic: 'cơ_bản',
+  food: 'đồ_ăn',
+  adjective: 'tính_từ',
+}
+
+interface SummaryCardProps {
+  icon: LucideIcon
+  value: number
+  label: string
+  iconClassName: string
+}
+
+function SummaryCard({ icon: Icon, value, label, iconClassName }: SummaryCardProps) {
+  return (
+    <div className="flex min-h-24 flex-col items-center justify-center rounded-[1.25rem] border border-border bg-card px-2 py-2 text-center shadow-card">
+      <div className={cn('mb-1 flex h-8 w-8 items-center justify-center rounded-xl', iconClassName)}>
+        <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
+      </div>
+      <span className="text-xl font-extrabold leading-none text-foreground tabular-nums">{value}</span>
+      <span className="mt-1 text-xs font-medium leading-4 text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
 function Flashcard({ word, isFlipped, onFlip }: FlashcardProps) {
   return (
     // Container perspective cho hiệu ứng 3D
     <div
-      className="relative w-full cursor-pointer"
-      style={{ perspective: '1200px', height: '280px' }}
+      className="relative h-[208px] w-full cursor-pointer sm:h-[248px]"
+      style={{ perspective: '1200px' }}
       onClick={onFlip}
       role="button"
       tabIndex={0}
@@ -71,41 +107,41 @@ function Flashcard({ word, isFlipped, onFlip }: FlashcardProps) {
       >
         {/* MẶT TRƯỚC - Tiếng Anh */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 shadow-2xl"
+          className="absolute inset-0 flex flex-col items-center justify-center rounded-[1.25rem] bg-brand-700 p-4 text-center shadow-elevated sm:p-6"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <span className="mb-3 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white/80">
-            {word.partOfSpeech}
+          <span className="mb-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+            {PART_OF_SPEECH_LABELS[word.partOfSpeech] ?? word.partOfSpeech}
           </span>
-          <h2 className="mb-2 text-4xl font-bold tracking-wide text-white">{word.word}</h2>
-          <p className="text-lg text-indigo-200">{word.pronunciation}</p>
-          <div className="mt-4 flex flex-wrap justify-center gap-1">
+          <h2 className="mb-1 text-3xl font-extrabold tracking-wide text-white sm:text-4xl">{word.word}</h2>
+          <p className="rounded-lg bg-white/10 px-3 py-1 text-base tracking-wide text-white/90">{word.pronunciation}</p>
+          <div className="mt-2 flex flex-wrap justify-center gap-2">
             {word.tags.map(tag => (
-              <span key={tag} className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/60">
-                #{tag}
+              <span key={tag} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium text-white">
+                #{TAG_LABELS[tag] ?? tag}
               </span>
             ))}
           </div>
-          <p className="mt-6 text-sm text-white/50">Nhấn để xem nghĩa ↓</p>
+          <p className="mt-3 text-sm font-medium text-white/90">Nhấn để xem nghĩa ↓</p>
         </div>
 
         {/* MẶT SAU - Tiếng Việt */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-6 shadow-2xl"
+          className="absolute inset-0 flex flex-col items-center justify-center rounded-[1.25rem] bg-success p-4 text-center shadow-elevated sm:p-6"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <span className="mb-3 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white/80">
+          <span className="mb-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
             Nghĩa tiếng Việt
           </span>
-          <h2 className="mb-4 text-3xl font-bold text-white">{word.meaning}</h2>
+          <h2 className="mb-3 text-2xl font-bold text-white sm:text-3xl">{word.meaning}</h2>
           <div className="w-full space-y-2">
             {word.examples.slice(0, 2).map((ex, i) => (
-              <div key={i} className="rounded-lg bg-white/10 px-4 py-2">
+              <div key={i} className="rounded-xl bg-white/15 px-4 py-2">
                 <p className="text-sm italic text-white/90">"{ex}"</p>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm text-white/50">Nhấn để lật lại ↑</p>
+          <p className="mt-3 text-sm font-medium text-white/90">Nhấn để lật lại ↑</p>
         </div>
       </div>
     </div>
@@ -128,22 +164,22 @@ function WordListItem({ word, rating }: WordListItemProps) {
   }
 
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-gray-800 p-4 transition-colors hover:bg-gray-700">
+    <div className="flex items-center gap-3 rounded-[1.25rem] border border-border bg-card p-4 shadow-card transition-colors hover:border-border-strong">
       <div className={cn(
         'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-        word.difficulty === 1 ? 'bg-emerald-900/50 text-emerald-400' :
-        word.difficulty === 2 ? 'bg-yellow-900/50 text-yellow-400' :
-        'bg-red-900/50 text-red-400'
+        word.difficulty === 1 ? 'bg-[#ecfdf5] text-success' :
+        word.difficulty === 2 ? 'bg-[#fffbeb] text-warning' :
+        'bg-[#fef2f2] text-destructive'
       )}>
         {word.difficulty === 1 ? 'E' : word.difficulty === 2 ? 'M' : 'H'}
       </div>
       <div className="flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-semibold text-white">{word.word}</span>
-          <span className="text-sm text-gray-400">{word.pronunciation}</span>
+          <span className="font-semibold text-foreground">{word.word}</span>
+          <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">{word.pronunciation}</span>
         </div>
-        <p className="text-sm text-gray-300">{word.meaning}</p>
-        <p className="mt-0.5 text-xs italic text-gray-500">"{word.examples[0]}"</p>
+        <p className="text-sm text-muted-foreground">{word.meaning}</p>
+        <p className="mt-1 text-xs italic text-muted-foreground">"{word.examples[0]}"</p>
       </div>
       {rating && (
         <span className={cn('text-xs font-medium', ratingColor[rating])}>
@@ -268,30 +304,33 @@ export default function VocabularyPage() {
   const isCompleted = reviewedCount >= totalCards && totalCards > 0
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24 pt-4">
+    <div className="min-h-full bg-background py-4 sm:py-6">
       <div className="mx-auto max-w-lg px-4">
 
-        {/* ===== HEADER THỐNG KÊ ===== */}
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          <div className="flex flex-col items-center rounded-xl bg-orange-900/30 p-3 ring-1 ring-orange-700/50">
-            <Clock className="mb-1 h-5 w-5 text-orange-400" />
-            <span className="text-xl font-bold text-white">{Math.max(0, totalCards - reviewedCount)}</span>
-            <span className="text-xs text-gray-400">Đến hạn</span>
-          </div>
-          <div className="flex flex-col items-center rounded-xl bg-indigo-900/30 p-3 ring-1 ring-indigo-700/50">
-            <BookOpen className="mb-1 h-5 w-5 text-indigo-400" />
-            <span className="text-xl font-bold text-white">{SAMPLE_WORDS.length}</span>
-            <span className="text-xs text-gray-400">Từ mới</span>
-          </div>
-          <div className="flex flex-col items-center rounded-xl bg-emerald-900/30 p-3 ring-1 ring-emerald-700/50">
-            <CheckCircle2 className="mb-1 h-5 w-5 text-emerald-400" />
-            <span className="text-xl font-bold text-white">{masteredCount}</span>
-            <span className="text-xs text-gray-400">Đã thuộc</span>
-          </div>
+      {/* ===== HEADER THỐNG KÊ ===== */}
+        <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+          <SummaryCard
+            icon={Clock}
+            value={Math.max(0, totalCards - reviewedCount)}
+            label="Đến hạn"
+            iconClassName="bg-[#fff7ed] text-warning"
+          />
+          <SummaryCard
+            icon={BookOpen}
+            value={SAMPLE_WORDS.length}
+            label="Từ mới"
+            iconClassName="bg-[#eaf2ff] text-primary"
+          />
+          <SummaryCard
+            icon={CheckCircle2}
+            value={masteredCount}
+            label="Đã thuộc"
+            iconClassName="bg-[#ecfdf5] text-success"
+          />
         </div>
 
-        {/* ===== TABS CHẾ ĐỘ HỌC ===== */}
-        <div className="mb-6 flex rounded-xl bg-gray-800 p-1">
+      {/* ===== TABS CHẾ ĐỘ HỌC ===== */}
+        <div className="mb-6 flex rounded-[1.25rem] border border-border bg-card p-1 shadow-card" role="tablist" aria-label="Chế độ học từ vựng">
           {(['all', 'new', 'review'] as StudyMode[]).map(mode => (
             <button
               key={mode}
@@ -300,9 +339,11 @@ export default function VocabularyPage() {
                 setCardState(prev => ({ ...prev, index: 0, isFlipped: false }))
               }}
               className={cn(
-                'flex-1 rounded-lg py-2 text-sm font-medium transition-all',
-                studyMode === mode ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'
+                'min-h-11 flex-1 rounded-[1rem] px-2 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                studyMode === mode ? 'bg-primary text-white shadow-card' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
+              role="tab"
+              aria-selected={studyMode === mode}
             >
               {mode === 'all' ? 'Tất cả' : mode === 'new' ? 'Học mới' : 'Ôn tập'}
             </button>
@@ -310,38 +351,42 @@ export default function VocabularyPage() {
         </div>
 
         {/* ===== TOGGLE VIEW + THỐNG KÊ ===== */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-indigo-400" />
-            <span className="text-sm text-gray-400">
-              Retention: <span className="font-semibold text-white">{retentionRate}%</span>
+            <TrendingUp className="h-4 w-4 text-primary" strokeWidth={2} />
+            <span className="text-sm text-muted-foreground">
+              Tỷ lệ ghi nhớ: <span className="font-bold text-foreground">{retentionRate}%</span>
             </span>
           </div>
-          <div className="flex rounded-lg bg-gray-800 p-1">
+          <div className="flex rounded-xl border border-border bg-card p-1 shadow-card" aria-label="Chọn cách hiển thị">
             <button
               onClick={() => setViewMode('card')}
-              className={cn('rounded-md p-1.5 transition-colors', viewMode === 'card' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white')}
+              className={cn('flex h-11 w-11 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary', viewMode === 'card' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+              aria-label="Hiển thị dạng thẻ"
+              aria-pressed={viewMode === 'card'}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-5 w-5" strokeWidth={2} />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white')}
+              className={cn('flex h-11 w-11 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary', viewMode === 'list' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+              aria-label="Hiển thị dạng danh sách"
+              aria-pressed={viewMode === 'list'}
             >
-              <List className="h-4 w-4" />
+              <List className="h-5 w-5" strokeWidth={2} />
             </button>
           </div>
         </div>
 
         {/* ===== PROGRESS BAR ===== */}
         <div className="mb-6">
-          <div className="mb-1 flex justify-between text-xs text-gray-500">
+          <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
             <span>{reviewedCount}/{totalCards} thẻ</span>
-            <span>{retentionRate}% nhớ</span>
+            <span className="font-medium text-foreground">{retentionRate}% nhớ</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-800">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: totalCards > 0 ? `${(reviewedCount / totalCards) * 100}%` : '0%' }}
             />
           </div>
@@ -351,37 +396,37 @@ export default function VocabularyPage() {
         {viewMode === 'card' && (
           <>
             {filteredWords.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-gray-800 py-16 text-center">
-                <Star className="h-12 w-12 text-yellow-400" />
-                <p className="text-lg font-semibold text-white">Không có thẻ nào!</p>
-                <p className="text-sm text-gray-400">Chuyển sang chế độ khác để học.</p>
+              <div className="flex flex-col items-center gap-3 rounded-[1.25rem] border border-border bg-card px-6 py-16 text-center shadow-card">
+                <Star className="h-12 w-12 text-warning" />
+                <p className="text-lg font-bold text-foreground">Không có thẻ nào!</p>
+                <p className="text-sm text-muted-foreground">Chuyển sang chế độ khác để học.</p>
               </div>
             ) : isCompleted ? (
               // Màn hình hoàn thành phiên học
-              <div className="flex flex-col items-center gap-4 rounded-2xl bg-gradient-to-br from-emerald-900/50 to-teal-900/50 p-8 text-center ring-1 ring-emerald-700/50">
-                <CheckCircle2 className="h-16 w-16 text-emerald-400" />
-                <h3 className="text-2xl font-bold text-white">Hoàn thành! 🎉</h3>
-                <p className="text-gray-300">Bạn đã ôn xong <strong>{totalCards}</strong> từ</p>
+              <div className="flex flex-col items-center gap-4 rounded-[1.25rem] border border-[#a7f3d0] bg-[#ecfdf5] p-8 text-center shadow-card">
+                <CheckCircle2 className="h-16 w-16 text-success" />
+                <h3 className="text-2xl font-bold text-foreground">Hoàn thành! 🎉</h3>
+                <p className="text-muted-foreground">Bạn đã ôn xong <strong className="text-foreground">{totalCards}</strong> từ</p>
                 <div className="mt-2 grid w-full grid-cols-2 gap-4">
-                  <div className="rounded-xl bg-emerald-900/40 p-3">
-                    <div className="text-2xl font-bold text-emerald-400">{masteredCount}</div>
-                    <div className="text-xs text-gray-400">Đã thuộc</div>
+                  <div className="rounded-xl border border-[#a7f3d0] bg-card p-3">
+                    <div className="text-2xl font-bold text-success">{masteredCount}</div>
+                    <div className="text-xs text-muted-foreground">Đã thuộc</div>
                   </div>
-                  <div className="rounded-xl bg-red-900/40 p-3">
-                    <div className="text-2xl font-bold text-red-400">{reviewedCount - masteredCount}</div>
-                    <div className="text-xs text-gray-400">Cần ôn thêm</div>
+                  <div className="rounded-xl border border-[#fecaca] bg-card p-3">
+                    <div className="text-2xl font-bold text-destructive">{reviewedCount - masteredCount}</div>
+                    <div className="text-xs text-muted-foreground">Cần ôn thêm</div>
                   </div>
                 </div>
                 <button
                   onClick={() => setCardState({ index: 0, isFlipped: false, reviewed: new Set(), ratings: {} })}
-                  className="mt-2 w-full rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+                  className="mt-2 min-h-12 w-full rounded-[1rem] bg-success px-6 py-3 font-semibold text-white transition-colors hover:bg-[#065f46] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Học lại từ đầu
                 </button>
               </div>
             ) : currentWord ? (
               <>
-                <div className="mb-3 text-center text-sm text-gray-500">
+                <div className="mb-2 text-center text-sm font-medium text-muted-foreground">
                   {cardState.index + 1} / {filteredWords.length}
                 </div>
 
@@ -392,54 +437,54 @@ export default function VocabularyPage() {
                 <div className="mt-6">
                   {cardState.isFlipped ? (
                     <div>
-                      <p className="mb-3 text-center text-sm text-gray-400">Bạn nhớ từ này như thế nào?</p>
-                      <div className="grid grid-cols-3 gap-3">
+                      <p className="mb-3 text-center text-sm text-muted-foreground">Bạn nhớ từ này như thế nào?</p>
+                      <div className="grid grid-cols-3 gap-2">
                         <button
                           onClick={() => handleRate(1)}
-                          className="flex flex-col items-center gap-1 rounded-xl bg-red-900/40 p-4 ring-1 ring-red-700/50 transition-all hover:bg-red-900/60 active:scale-95"
+                          className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#fecaca] bg-[#fef2f2] p-3 transition-colors hover:bg-[#fee2e2] active:scale-[0.98]"
                         >
-                          <XCircle className="h-6 w-6 text-red-400" />
-                          <span className="text-sm font-semibold text-red-300">Khó</span>
-                          <span className="text-xs text-red-400/60">+1 XP</span>
+                          <XCircle className="h-6 w-6 text-destructive" />
+                          <span className="text-sm font-semibold text-foreground">Khó</span>
+                          <span className="text-xs text-muted-foreground">+1 XP</span>
                         </button>
                         <button
                           onClick={() => handleRate(3)}
-                          className="flex flex-col items-center gap-1 rounded-xl bg-yellow-900/40 p-4 ring-1 ring-yellow-700/50 transition-all hover:bg-yellow-900/60 active:scale-95"
+                          className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#fde68a] bg-[#fffbeb] p-3 transition-colors hover:bg-[#fef3c7] active:scale-[0.98]"
                         >
-                          <Minus className="h-6 w-6 text-yellow-400" />
-                          <span className="text-sm font-semibold text-yellow-300">Ổn</span>
-                          <span className="text-xs text-yellow-400/60">+2 XP</span>
+                          <Minus className="h-6 w-6 text-warning" />
+                          <span className="text-sm font-semibold text-foreground">Ổn</span>
+                          <span className="text-xs text-muted-foreground">+2 XP</span>
                         </button>
                         <button
                           onClick={() => handleRate(5)}
-                          className="flex flex-col items-center gap-1 rounded-xl bg-emerald-900/40 p-4 ring-1 ring-emerald-700/50 transition-all hover:bg-emerald-900/60 active:scale-95"
+                          className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#a7f3d0] bg-[#ecfdf5] p-3 transition-colors hover:bg-[#d1fae5] active:scale-[0.98]"
                         >
-                          <CheckCircle2 className="h-6 w-6 text-emerald-400" />
-                          <span className="text-sm font-semibold text-emerald-300">Dễ</span>
-                          <span className="text-xs text-emerald-400/60">+5 XP</span>
+                          <CheckCircle2 className="h-6 w-6 text-success" />
+                          <span className="text-sm font-semibold text-foreground">Dễ</span>
+                          <span className="text-xs text-muted-foreground">+5 XP</span>
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <button
                         onClick={handlePrev}
                         disabled={cardState.index === 0}
-                        className="flex items-center gap-2 rounded-xl bg-gray-800 px-4 py-3 text-sm text-gray-400 transition-colors hover:bg-gray-700 disabled:opacity-40"
+                        className="flex min-h-12 items-center gap-1 rounded-[1rem] border border-border bg-card px-3 py-3 text-sm font-medium text-muted-foreground shadow-card transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         Trước
                       </button>
                       <button
                         onClick={handleFlip}
-                        className="rounded-xl bg-indigo-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-indigo-700"
+                        className="min-h-12 rounded-[1rem] bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Xem nghĩa
                       </button>
                       <button
                         onClick={handleNext}
                         disabled={cardState.index === filteredWords.length - 1}
-                        className="flex items-center gap-2 rounded-xl bg-gray-800 px-4 py-3 text-sm text-gray-400 transition-colors hover:bg-gray-700 disabled:opacity-40"
+                        className="flex min-h-12 items-center gap-1 rounded-[1rem] border border-border bg-card px-3 py-3 text-sm font-medium text-muted-foreground shadow-card transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
                       >
                         Tiếp
                         <ChevronRight className="h-4 w-4" />
@@ -449,20 +494,20 @@ export default function VocabularyPage() {
                 </div>
 
                 {/* Thống kê streak + XP */}
-                <div className="mt-6 flex items-center justify-center gap-6 text-center">
+                <div className="mt-6 flex items-center justify-center gap-5 text-center">
                   <div>
-                    <div className="text-lg font-bold text-white">{progress?.currentStreak ?? 0}</div>
-                    <div className="text-xs text-gray-500">🔥 Streak</div>
+                    <div className="text-lg font-bold text-foreground">{progress?.currentStreak ?? 0}</div>
+                    <div className="text-xs text-muted-foreground">🔥 Chuỗi ngày</div>
                   </div>
-                  <div className="h-8 w-px bg-gray-700" />
+                  <div className="h-8 w-px bg-border" />
                   <div>
-                    <div className="text-lg font-bold text-white">{progress?.totalXP ?? 0}</div>
-                    <div className="text-xs text-gray-500">⭐ XP</div>
+                    <div className="text-lg font-bold text-foreground">{progress?.totalXP ?? 0}</div>
+                    <div className="text-xs text-muted-foreground">⭐ XP</div>
                   </div>
-                  <div className="h-8 w-px bg-gray-700" />
+                  <div className="h-8 w-px bg-border" />
                   <div>
-                    <div className="text-lg font-bold text-white">{progress?.vocabularyCount ?? 0}</div>
-                    <div className="text-xs text-gray-500">📚 Từ học</div>
+                    <div className="text-lg font-bold text-foreground">{progress?.vocabularyCount ?? 0}</div>
+                    <div className="text-xs text-muted-foreground">📚 Từ đã học</div>
                   </div>
                 </div>
               </>
@@ -472,8 +517,8 @@ export default function VocabularyPage() {
 
         {/* ===== CHẾ ĐỘ DANH SÁCH (LIST MODE) ===== */}
         {viewMode === 'list' && (
-          <div className="space-y-2">
-            {SAMPLE_WORDS.map(word => (
+          <div className="space-y-3">
+            {filteredWords.map(word => (
               <WordListItem key={word.id} word={word} rating={cardState.ratings[word.id]} />
             ))}
           </div>

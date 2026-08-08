@@ -153,9 +153,11 @@
 /* ============================
    BASE STYLES
    ============================ */
-*, *::before, *::after {
-  box-sizing: border-box;
-  border-color: var(--color-border);
+@layer base {
+  :where(*, *::before, *::after) {
+    box-sizing: border-box;
+    border-color: var(--color-border);
+  }
 }
 
 html {
@@ -475,6 +477,12 @@ html:not(.dark) [class*="shadow-purple-"],
 html:not(.dark) [class*="shadow-violet-"],
 html:not(.dark) [class*="shadow-pink-"],
 html:not(.dark) [class*="shadow-rose-"] { box-shadow: var(--shadow-card) !important; }
+
+/* Semantic borders must win over the compatibility bridge: selected states need a visible edge. */
+html:not(.dark) .border-primary { border-color: var(--color-primary) !important; }
+html:not(.dark) .border-success { border-color: var(--color-success) !important; }
+html:not(.dark) .border-destructive { border-color: var(--color-destructive) !important; }
+html:not(.dark) .border-warning { border-color: var(--color-warning) !important; }
 
 /* IPA is a focused, quiet reading surface instead of a dark code block. */
 html:not(.dark) code,

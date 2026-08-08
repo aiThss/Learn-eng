@@ -3,7 +3,7 @@
  * Hiển thị tiêu đề trang, streak, XP, và menu
  */
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Flame, Zap, Settings } from 'lucide-react'
+import { ChevronLeft, Flame, Zap, Settings, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProgressStore, useUserStore } from '@/store'
 
@@ -81,12 +81,12 @@ export default function TopBar() {
           <img
             src={user?.avatar}
             alt={user?.name ?? 'Ảnh đại diện'}
-            className="w-8 h-8 rounded-full object-cover"
+            className="h-9 w-9 rounded-full object-cover"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center overflow-hidden text-white text-sm font-semibold">
-            {user?.avatar && !avatarIsImage ? user.avatar : user?.name?.[0] ?? (
-              <img src="/lumina-logo.png" alt="Lumina" className="h-full w-full object-cover" />
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#bfdbfe] bg-[#eaf2ff] text-sm font-bold text-primary" aria-label="Hồ sơ người học">
+            {user?.name?.[0] ?? (
+              <UserRound className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             )}
           </div>
         )}
