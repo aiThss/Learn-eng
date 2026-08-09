@@ -3,6 +3,7 @@
  * Hỗ trợ 3 mode, nhiều dạng bài, timer, điều hướng câu hỏi, màn kết quả
  */
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Timer,
   CheckCircle,
@@ -319,24 +320,44 @@ function ResultScreen({
 // Trang chính Practice
 // ========================
 export default function Practice() {
-  const [mode, setMode] = useState<Mode>('practice')
-  const [started, setStarted] = useState(false)
-  const [currentIdx, setCurrentIdx] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedMode = searchParams.get('mode')
+  const mode: Mode = requestedMode === 'test' || requestedMode === 'mock_ielts' ? requestedMode : 'practice'
+  const stage = searchParams.get('stage')
+  const started = stage === 'doing' || stage === 'result'
+  const submitted = stage === 'result'
+  const requestedQuestion = Number(searchParams.get('question'))
+  const currentIdx = Math.min(
+    PRACTICE_QUESTIONS.length - 1,
+    Math.max(0, Number.isInteger(requestedQuestion) && requestedQuestion > 0 ? requestedQuestion - 1 : 0),
+  )
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [submitted, setSubmitted] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [fillInput, setFillInput] = useState('')
 
   const currentQ = PRACTICE_QUESTIONS[currentIdx]
 
+  const setPracticeRoute = useCallback((nextMode: Mode, nextStage: 'select' | 'doing' | 'result', question = 0) => {
+    const next = new URLSearchParams()
+    if (nextMode !== 'practice') next.set('mode', nextMode)
+    if (nextStage !== 'select') next.set('stage', nextStage)
+    if (nextStage === 'doing') next.set('question', String(question + 1))
+    setSearchParams(next)
+  }, [setSearchParams])
+
+  const chooseMode = (nextMode: Mode) => setPracticeRoute(nextMode, 'select')
+  const beginPractice = () => setPracticeRoute(mode, 'doing')
+  const selectQuestion = (question: number) => setPracticeRoute(mode, 'doing', question)
+  const finishPractice = useCallback(() => setPracticeRoute(mode, 'result'), [mode, setPracticeRoute])
+
   // Khởi động timer khi bắt đầu
   useEffect(() => {
-    if (!started) return
+    if (!started || submitted) return
     const timeLimit = MODE_CONFIG[mode].time
     if (!timeLimit) return
 
     setTimeLeft(timeLimit)
-  }, [started, mode])
+  }, [started, mode, submitted])
 
   // Đếm ngược timer
   useEffect(() => {
@@ -345,14 +366,14 @@ export default function Practice() {
       setTimeLeft((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer)
-          setSubmitted(true) // Auto submit khi hết giờ
+          finishPractice() // Auto submit khi hết giờ
           return 0
         }
         return prev - 1
       })
     }, 1000)
     return () => clearInterval(timer)
-  }, [timeLeft])
+  }, [finishPractice, submitted, timeLeft])
 
   // Format timer MM:SS
   const formatTime = (sec: number) => {
@@ -396,13 +417,13 @@ export default function Practice() {
       setFillInput('')
     }
     if (currentIdx < PRACTICE_QUESTIONS.length - 1) {
-      setCurrentIdx((i) => i + 1)
+      selectQuestion(currentIdx + 1)
     }
   }
 
   const goPrev = () => {
     if (currentIdx > 0) {
-      setCurrentIdx((i) => i - 1)
+      selectQuestion(currentIdx - 1)
     }
   }
 
@@ -411,15 +432,13 @@ export default function Practice() {
     if (currentQ.type === 'fill_blank' && fillInput.trim()) {
       setAnswer(fillInput)
     }
-    setSubmitted(true)
+    finishPractice()
   }
 
   // Reset
   const handleReset = () => {
-    setStarted(false)
-    setSubmitted(false)
+    setPracticeRoute(mode, 'select')
     setAnswers({})
-    setCurrentIdx(0)
     setFillInput('')
     setTimeLeft(null)
   }
@@ -447,7 +466,7 @@ export default function Practice() {
               return (
               <button
                 key={id}
-                onClick={() => setMode(id)}
+                onClick={() => chooseMode(id)}
                 className={cn(
                   'min-h-[88px] w-full rounded-[1.25rem] border bg-card p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isSelected
@@ -513,7 +532,7 @@ export default function Practice() {
         </div>
 
         <button
-          onClick={() => setStarted(true)}
+          onClick={beginPractice}
           className="min-h-14 w-full rounded-[1.25rem] bg-primary px-6 py-4 text-base font-bold text-white shadow-card transition-colors hover:bg-brand-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Bắt đầu luyện tập
@@ -569,7 +588,7 @@ export default function Practice() {
             return (
               <button
                 key={idx}
-                onClick={() => setCurrentIdx(idx)}
+                onClick={() => selectQuestion(idx)}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-lg text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   dotColor[status]

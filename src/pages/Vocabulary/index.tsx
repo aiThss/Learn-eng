@@ -3,6 +3,7 @@
  * Hỗ trợ lật thẻ 3D, đánh giá chất lượng, chế độ danh sách/thẻ
  */
 import { useState, useCallback, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { BookOpen, List, LayoutGrid, ChevronLeft, ChevronRight, Star, TrendingUp, Clock, CheckCircle2, XCircle, Minus, Volume2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLessonStore, useProgressStore, useSettingsStore, useUserStore } from '@/store'
@@ -195,19 +196,35 @@ function WordListItem({ word, rating }: WordListItemProps) {
 // TRANG CHÍNH
 // ========================
 export default function VocabularyPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const { progress, incrementVocab, addXP } = useProgressStore()
   const { user } = useUserStore()
   const { settings } = useSettingsStore()
   const { setSRSCards } = useLessonStore()
 
-  const [viewMode, setViewMode] = useState<ViewMode>('card')
-  const [studyMode, setStudyMode] = useState<StudyMode>('all')
+  const viewMode: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'card'
+  const selectedStudyMode = searchParams.get('mode')
+  const studyMode: StudyMode = selectedStudyMode === 'new' || selectedStudyMode === 'review' ? selectedStudyMode : 'all'
   const [cardState, setCardState] = useState<CardState>({
     index: 0,
     isFlipped: false,
     reviewed: new Set(),
     ratings: {},
   })
+
+  const setViewMode = (view: ViewMode) => {
+    const next = new URLSearchParams(searchParams)
+    if (view === 'card') next.delete('view')
+    else next.set('view', view)
+    setSearchParams(next)
+  }
+
+  const setStudyMode = (mode: StudyMode) => {
+    const next = new URLSearchParams(searchParams)
+    if (mode === 'all') next.delete('mode')
+    else next.set('mode', mode)
+    setSearchParams(next)
+  }
   const [storedCards, setStoredCards] = useState<SRSCard[]>([])
 
   // Một nguồn dữ liệu SRS duy nhất: IndexedDB. Trang có thể đóng/mở hoặc offline

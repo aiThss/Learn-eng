@@ -3,7 +3,7 @@
  * 4 bước: Chào mừng → Thông tin → Bài test → Kết quả & bắt đầu
  */
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ChevronRight,
   ChevronLeft,
@@ -403,16 +403,19 @@ function UserInfoStep({
 // ========================
 function PlacementTestStep({
   answers,
+  currentQ,
   onAnswer,
+  onQuestionChange,
   onNext,
   onBack,
 }: {
   answers: Record<string, number>
+  currentQ: number
   onAnswer: (id: string, idx: number) => void
+  onQuestionChange: (question: number) => void
   onNext: () => void
   onBack: () => void
 }) {
-  const [currentQ, setCurrentQ] = useState(0)
   const question = PLACEMENT_QUESTIONS[currentQ]
   const options = [...question.options, I_DONT_KNOW_OPTION]
   const isLastQ = currentQ === PLACEMENT_QUESTIONS.length - 1
@@ -422,7 +425,7 @@ function PlacementTestStep({
     if (isLastQ) {
       onNext()
     } else {
-      setCurrentQ((c) => c + 1)
+      onQuestionChange(currentQ + 1)
     }
   }
 
@@ -493,7 +496,7 @@ function PlacementTestStep({
       {/* Navigation */}
       <div className="flex gap-3 mt-6">
         <button
-          onClick={() => (currentQ > 0 ? setCurrentQ((c) => c - 1) : onBack())}
+          onClick={() => (currentQ > 0 ? onQuestionChange(currentQ - 1) : onBack())}
           className="w-12 h-12 rounded-xl bg-gray-800 border border-gray-700/50 flex items-center justify-center flex-shrink-0"
         >
           <ChevronLeft className="w-5 h-5 text-gray-400" />
@@ -630,11 +633,11 @@ function ResultStep({
 // ========================
 export default function Onboarding() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { completeOnboarding } = useUserStore()
   const { setProgress } = useProgressStore()
   const { setPhase, setWeek } = useLessonStore()
 
-  const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   const [avatar, setAvatar] = useState('😊')
   const [testAnswers, setTestAnswers] = useState<Record<string, number>>({})
@@ -642,6 +645,28 @@ export default function Onboarding() {
   const [googleProfile, setGoogleProfile] = useState<GoogleOAuthProfile | null>(null)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [googleError, setGoogleError] = useState<string | null>(null)
+
+  const requestedStep = Number(searchParams.get('step'))
+  const step = requestedStep >= 1 && requestedStep <= 3 ? requestedStep : 0
+  const requestedQuestion = Number(searchParams.get('question'))
+  const currentQuestion = Math.min(
+    PLACEMENT_QUESTIONS.length - 1,
+    Math.max(0, Number.isInteger(requestedQuestion) && requestedQuestion > 0 ? requestedQuestion - 1 : 0),
+  )
+
+  const setOnboardingStep = (nextStep: number) => {
+    const next = new URLSearchParams()
+    if (nextStep > 0) next.set('step', String(nextStep))
+    if (nextStep === 2) next.set('question', '1')
+    setSearchParams(next)
+  }
+
+  const setPlacementQuestion = (question: number) => {
+    const next = new URLSearchParams()
+    next.set('step', '2')
+    next.set('question', String(question + 1))
+    setSearchParams(next)
+  }
 
   // Tính điểm test
   const testScore = PLACEMENT_QUESTIONS.filter(
@@ -667,7 +692,7 @@ export default function Onboarding() {
       setGoogleProfile(profile)
       setName(profile.name)
       if (profile.avatar) setAvatar(profile.avatar)
-      setStep(1)
+      setOnboardingStep(1)
     } catch (error) {
       setGoogleError(error instanceof Error ? error.message : 'Không thể đăng nhập Google.')
     } finally {
@@ -726,7 +751,7 @@ export default function Onboarding() {
       <div className="flex flex-col flex-1 pb-8">
         {step === 0 && (
           <WelcomeStep
-            onNext={() => setStep(1)}
+            onNext={() => setOnboardingStep(1)}
             onGoogleLogin={() => void handleGoogleLogin()}
             googleAvailable={isGoogleOAuthConfigured()}
             isGoogleLoading={isGoogleLoading}
@@ -739,16 +764,18 @@ export default function Onboarding() {
             avatar={avatar}
             onNameChange={setName}
             onAvatarChange={setAvatar}
-            onNext={() => setStep(2)}
-            onBack={() => setStep(0)}
+            onNext={() => setOnboardingStep(2)}
+            onBack={() => setOnboardingStep(0)}
           />
         )}
         {step === 2 && (
           <PlacementTestStep
             answers={testAnswers}
+            currentQ={currentQuestion}
             onAnswer={handleAnswer}
-            onNext={() => setStep(3)}
-            onBack={() => setStep(1)}
+            onQuestionChange={setPlacementQuestion}
+            onNext={() => setOnboardingStep(3)}
+            onBack={() => setOnboardingStep(1)}
           />
         )}
         {step === 3 && (

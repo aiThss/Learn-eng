@@ -3,6 +3,7 @@
  * 2 tabs: Đọc hiểu và Luyện viết với AI grading
  */
 import { useState, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   BookOpen,
   PenLine,
@@ -537,7 +538,15 @@ function WritingTab() {
 type Tab = 'reading' | 'writing'
 
 export default function ReadingWriting() {
-  const [activeTab, setActiveTab] = useState<Tab>('reading')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab: Tab = searchParams.get('tab') === 'writing' ? 'writing' : 'reading'
+
+  const setActiveTab = (tab: Tab) => {
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'reading') next.delete('tab')
+    else next.set('tab', tab)
+    setSearchParams(next)
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">

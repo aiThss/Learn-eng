@@ -772,8 +772,9 @@ export default function Settings() {
               {apkUpdate.error && <p className="mx-4 mb-3 text-xs leading-5 text-red-400">{apkUpdate.error}</p>}
             </>
           )}
-          <a
-            href="/download"
+          <button
+            type="button"
+            onClick={() => navigate('/download')}
             className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-gray-700/20 active:bg-gray-700/30"
           >
             <div>
@@ -781,7 +782,7 @@ export default function Settings() {
               <p className="mt-0.5 text-xs text-gray-500">Quét QR hoặc tải APK chính thức</p>
             </div>
             <Download className="h-4 w-4 text-indigo-400" />
-          </a>
+          </button>
         </div>
 
         {showDevLocalPin && (

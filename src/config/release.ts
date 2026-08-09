@@ -4,7 +4,7 @@
  */
 export const APP_RELEASE = {
   version: '0.0.1',
-  versionCode: 3,
+  versionCode: 4,
   updateManifestUrl:
     'https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/latest.json',
 } as const

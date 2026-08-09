@@ -22,7 +22,7 @@ Nhấn vào nút bên dưới để tải trực tiếp file APK về điện th
 
 Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến repository GitHub chính thức; luôn đối chiếu SHA-256 trong tệp `.sha256` trước khi cài đặt.
 
-SHA-256 của `EnglishUp-v0.0.1.apk`: `9F1828AC5A8ADE6224E21E6A89816B05B9AE9EF78BD89650AF58AEADBD48C460`
+SHA-256 của `EnglishUp-v0.0.1.apk`: `823771C010DEA0E9703DE6F4FB2D13096DFD7231872F39FBDA2FBB1ED7ACD9EF`
 
 ### 🛠️ Hướng dẫn cài đặt trên Android:
 1. Nhấn đường link trên để tải file `EnglishUp-v0.0.1.apk`.

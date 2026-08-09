@@ -1,4 +1,5 @@
 /// <reference types="@capacitor/local-notifications" />
+/// <reference types="@capacitor/app" />
 
 const config = {
   appId: 'com.englishup.app',

@@ -27,8 +27,8 @@ const PAGE_TITLES: Record<string, string> = {
 
 // Trang có nút back
 const BACK_PAGES = [
-  '/roadmap', '/lesson/today', '/grammar', '/listening',
-  '/speaking', '/reading-writing', '/review', '/download', '/settings',
+  '/roadmap', '/lesson/today', '/vocabulary', '/grammar', '/listening',
+  '/speaking', '/reading-writing', '/practice', '/progress', '/review', '/download', '/settings',
 ]
 
 export default function TopBar() {

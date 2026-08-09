@@ -3,7 +3,7 @@
  * Bao gồm 4 tab: Từ vựng, Ngữ pháp, Nghe, Luyện tập
  */
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   BookOpen,
   Zap,
@@ -685,19 +685,31 @@ function LockedTab() {
 // ========================
 export default function TodayLesson() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { addXP } = useProgressStore()
   const { user } = useUserStore()
   const { currentWeek, currentPhase } = useLessonStore()
   const lesson = PHASE_TODAY_LESSONS[currentPhase]
   const lessonId = `${currentPhase}-week-${currentWeek}-today`
 
-  const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
   const [completedSections, setCompletedSections] = useState<Set<TabKey>>(new Set())
   const [lessonDone, setLessonDone] = useState(false)
   const [quizPassed, setQuizPassed] = useState(false)
   const [completionChecked, setCompletionChecked] = useState(false)
   const [savingCompletion, setSavingCompletion] = useState(false)
   const [earnedLessonXP, setEarnedLessonXP] = useState(false)
+
+  const selectedTab = searchParams.get('tab')
+  const activeTab: TabKey = TABS.some((tab) => tab.key === selectedTab)
+    ? selectedTab as TabKey
+    : 'vocabulary'
+
+  const setActiveTab = (tab: TabKey) => {
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'vocabulary') next.delete('tab')
+    else next.set('tab', tab)
+    setSearchParams(next)
+  }
 
   useEffect(() => {
     let cancelled = false
