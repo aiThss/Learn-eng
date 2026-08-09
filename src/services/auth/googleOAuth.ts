@@ -5,8 +5,13 @@
  * never persisted. Learning data remains on the device until a sync backend
  * is introduced.
  */
+import { Capacitor, registerPlugin } from '@capacitor/core'
+
 const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client'
 const GOOGLE_USERINFO_URL = 'https://openidconnect.googleapis.com/v1/userinfo'
+// OAuth Client IDs are public identifiers. An environment value can override
+// this production default for another deployment without exposing any secret.
+const DEFAULT_WEB_GOOGLE_CLIENT_ID = '894898478385-l9s6m4lov7djasfe267haedfuj74f393.apps.googleusercontent.com'
 
 interface GoogleTokenResponse {
   access_token?: string
@@ -53,10 +58,20 @@ export interface GoogleOAuthProfile {
   avatar?: string
 }
 
-export const GOOGLE_OAUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
+interface NativeGoogleAuthPlugin {
+  signIn(): Promise<GoogleOAuthProfile>
+}
+
+const NativeGoogleAuth = registerPlugin<NativeGoogleAuthPlugin>('NativeGoogleAuth')
+
+export const GOOGLE_OAUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || DEFAULT_WEB_GOOGLE_CLIENT_ID
+
+function isNativeAndroid(): boolean {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android'
+}
 
 export function isGoogleOAuthConfigured(): boolean {
-  return Boolean(GOOGLE_OAUTH_CLIENT_ID)
+  return isNativeAndroid() || Boolean(GOOGLE_OAUTH_CLIENT_ID)
 }
 
 function loadGoogleIdentityScript(): Promise<void> {
@@ -89,6 +104,10 @@ function getErrorMessage(error: GoogleTokenResponse): string {
  * discards the short-lived access token after retrieving the profile.
  */
 export async function signInWithGoogle(): Promise<GoogleOAuthProfile> {
+  if (isNativeAndroid()) {
+    return NativeGoogleAuth.signIn()
+  }
+
   if (!isGoogleOAuthConfigured()) {
     throw new Error('Google OAuth chưa được cấu hình cho bản này.')
   }

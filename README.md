@@ -22,7 +22,7 @@ Nhấn vào nút bên dưới để tải trực tiếp file APK về điện th
 
 Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến repository GitHub chính thức; luôn đối chiếu SHA-256 trong tệp `.sha256` trước khi cài đặt.
 
-SHA-256 của `EnglishUp-v0.0.1.apk`: `47DB25C98CC557A768C60716EF2BBFBF374B094F627F3445406C737E288F8E30`
+SHA-256 của `EnglishUp-v0.0.1.apk`: `9F1828AC5A8ADE6224E21E6A89816B05B9AE9EF78BD89650AF58AEADBD48C460`
 
 ### 🛠️ Hướng dẫn cài đặt trên Android:
 1. Nhấn đường link trên để tải file `EnglishUp-v0.0.1.apk`.
@@ -89,13 +89,15 @@ Nút **Đăng nhập với Google** luôn có ở màn hình chào mừng. Để
 
 Google chỉ cho phép `localhost` dùng HTTP để phát triển; nếu cần thử OAuth từ điện thoại qua Wi‑Fi, hãy dùng một URL HTTPS thay vì địa chỉ IP nội bộ.
 
-Sau đó thêm Client ID (đây là ID công khai, **không** phải Client Secret) vào `.env.local` khi chạy local:
+Sau đó thêm Web Client ID (đây là ID công khai, **không** phải Client Secret) vào `.env.local` khi chạy local:
 
 ```bash
 VITE_GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
 ```
 
 Trên Dokploy, thêm đúng biến `VITE_GOOGLE_CLIENT_ID` vào Environment của service **eng**, sau đó **Redeploy**. Vite nhúng biến này vào bundle ở lúc build nên chỉ lưu Environment thôi là chưa đủ.
+
+Với APK Android, tạo một **Android OAuth Client** riêng cho package `com.englishup.app` và SHA-1 của certificate release. APK dùng Google account selector native; khi đổi người học, lựa chọn Google trước đó của riêng app được xoá để hiển thị danh sách tài khoản lại.
 
 Access token chỉ được dùng tức thời để đọc hồ sơ Google và không lưu trong trình duyệt hoặc APK. Muốn đồng bộ tiến độ đa thiết bị, cần thêm backend để xác thực và lưu dữ liệu người học.
 
