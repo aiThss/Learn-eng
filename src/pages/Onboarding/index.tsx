@@ -291,19 +291,18 @@ function WelcomeStep({
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {googleAvailable ? (
-        <button
-          type="button"
-          onClick={onGoogleLogin}
-          disabled={isGoogleLoading}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-600 bg-white px-4 py-3.5 text-sm font-bold text-gray-800 transition-colors hover:bg-gray-100 disabled:cursor-wait disabled:opacity-60"
-        >
-          {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="text-lg font-black text-[#4285F4]">G</span>}
-          {isGoogleLoading ? 'Đang mở Google…' : 'Đăng nhập với Google'}
-        </button>
-      ) : (
-        <p className="text-xs text-gray-600 mt-3">Miễn phí · Không cần đăng ký</p>
-      )}
+      <button
+        type="button"
+        onClick={onGoogleLogin}
+        disabled={isGoogleLoading}
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-600 bg-white px-4 py-3.5 text-sm font-bold text-gray-800 transition-colors hover:bg-gray-100 disabled:cursor-wait disabled:opacity-60"
+      >
+        {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="text-lg font-black text-[#4285F4]">G</span>}
+        {isGoogleLoading ? 'Đang mở Google…' : 'Đăng nhập với Google'}
+      </button>
+      <p className={cn('mt-2 text-xs', googleAvailable ? 'text-gray-500' : 'text-amber-500')}>
+        {googleAvailable ? 'Miễn phí · Không cần mật khẩu' : 'Google OAuth đang chờ cấu hình trên máy chủ'}
+      </p>
       {googleError && <p className="mt-2 text-center text-xs text-red-400">{googleError}</p>}
     </div>
   )
@@ -657,6 +656,11 @@ export default function Onboarding() {
 
   const handleGoogleLogin = async () => {
     setGoogleError(null)
+    if (!isGoogleOAuthConfigured()) {
+      setGoogleError('Google OAuth chưa được cấu hình trên máy chủ. Thêm VITE_GOOGLE_CLIENT_ID rồi deploy lại.')
+      return
+    }
+
     setIsGoogleLoading(true)
     try {
       const profile = await signInWithGoogle()

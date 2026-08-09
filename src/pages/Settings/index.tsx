@@ -161,23 +161,39 @@ function ConfirmDialog({
   )
 }
 
-function SignOutDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+function SwitchLearnerDialog({
+  onConfirm,
+  onCancel,
+  isSwitching,
+}: {
+  onConfirm: () => void
+  onCancel: () => void
+  isSwitching: boolean
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-3xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20">
           <LogOut className="h-7 w-7 text-amber-400" />
         </div>
-        <h3 className="mb-2 text-center text-lg font-black text-white">Đăng xuất tài khoản?</h3>
+        <h3 className="mb-2 text-center text-lg font-black text-white">Đổi người học và làm lại?</h3>
         <p className="mb-6 text-center text-sm leading-relaxed text-gray-400">
-          Bạn sẽ quay về màn hình đăng nhập để chọn người học khác. Dữ liệu học của tài khoản hiện tại vẫn được giữ riêng trên thiết bị.
+          Tiến trình, từ vựng đã học và điểm kiểm tra của người học hiện tại sẽ bị xoá khỏi thiết bị. Người học tiếp theo sẽ bắt đầu bài kiểm tra từ câu 1.
         </p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 rounded-xl bg-gray-800 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-700">
+          <button
+            onClick={onCancel}
+            disabled={isSwitching}
+            className="flex-1 rounded-xl bg-gray-800 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-700 disabled:cursor-wait disabled:opacity-60"
+          >
             Hủy
           </button>
-          <button onClick={onConfirm} className="flex-1 rounded-xl bg-amber-500 py-3 text-sm font-semibold text-gray-950 hover:bg-amber-400">
-            Đăng xuất
+          <button
+            onClick={onConfirm}
+            disabled={isSwitching}
+            className="flex flex-1 items-center justify-center rounded-xl bg-amber-500 py-3 text-sm font-semibold text-gray-950 hover:bg-amber-400 disabled:cursor-wait disabled:opacity-60"
+          >
+            {isSwitching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Đổi & làm lại'}
           </button>
         </div>
       </div>
@@ -224,6 +240,7 @@ export default function Settings() {
   const [apiTestResult, setApiTestResult] = useState<'idle' | 'success' | 'error'>('idle')
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
+  const [isSwitchingUser, setIsSwitchingUser] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [saved, setSaved] = useState(false)
   const [updatingReminder, setUpdatingReminder] = useState(false)
@@ -333,18 +350,22 @@ export default function Settings() {
     }
   }
 
+  const eraseStoredLearningData = async (userId: string) => {
+    await db.transaction('rw', db.srsCards, db.dailyActivities, db.completedLessons, db.testScores, async () => {
+      await Promise.all([
+        db.srsCards.where('userId').equals(userId).delete(),
+        db.dailyActivities.where('userId').equals(userId).delete(),
+        db.completedLessons.where('userId').equals(userId).delete(),
+        db.testScores.where('userId').equals(userId).delete(),
+      ])
+    })
+  }
+
   // ── Reset tiến trình ──
   const handleReset = async () => {
     setShowResetDialog(false)
     if (user) {
-      await db.transaction('rw', db.srsCards, db.dailyActivities, db.completedLessons, db.testScores, async () => {
-        await Promise.all([
-          db.srsCards.where('userId').equals(user.id).delete(),
-          db.dailyActivities.where('userId').equals(user.id).delete(),
-          db.completedLessons.where('userId').equals(user.id).delete(),
-          db.testScores.where('userId').equals(user.id).delete(),
-        ])
-      })
+      await eraseStoredLearningData(user.id)
     }
     setProgress(createInitialProgress(user?.id ?? 'local'))
     setSRSCards([])
@@ -353,14 +374,24 @@ export default function Settings() {
     showToast('Đã reset tiến trình học tập')
   }
 
-  const handleSignOut = () => {
-    setShowSignOutDialog(false)
-    clearUser()
-    clearProgress()
-    setSRSCards([])
-    setPhase('PHASE_0')
-    setWeek(1)
-    navigate('/onboarding', { replace: true })
+  const handleSwitchUser = async () => {
+    if (isSwitchingUser) return
+
+    setIsSwitchingUser(true)
+    try {
+      if (user) await eraseStoredLearningData(user.id)
+
+      setShowSignOutDialog(false)
+      clearUser()
+      clearProgress()
+      setSRSCards([])
+      setPhase('PHASE_0')
+      setWeek(1)
+      navigate('/onboarding', { replace: true })
+    } catch {
+      showToast('Không thể xoá dữ liệu người học. Hãy thử lại.', 'error')
+      setIsSwitchingUser(false)
+    }
   }
 
   const handleCheckForApk = async () => {
@@ -689,8 +720,8 @@ export default function Settings() {
           </SettingRow>
 
           <SettingRow
-            label="Đăng xuất / đổi người học"
-            sublabel="Đăng nhập hoặc tạo hồ sơ cho người khác"
+            label="Đổi người học"
+            sublabel="Xóa tiến trình rồi làm bài kiểm tra từ câu 1"
             onClick={() => setShowSignOutDialog(true)}
           >
             <div className="flex items-center gap-1.5 text-amber-400">
@@ -804,9 +835,10 @@ export default function Settings() {
       )}
 
       {showSignOutDialog && (
-        <SignOutDialog
-          onConfirm={handleSignOut}
+        <SwitchLearnerDialog
+          onConfirm={() => void handleSwitchUser()}
           onCancel={() => setShowSignOutDialog(false)}
+          isSwitching={isSwitchingUser}
         />
       )}
 

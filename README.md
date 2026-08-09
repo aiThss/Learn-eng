@@ -44,7 +44,7 @@ SHA-256 của `EnglishUp-v0.0.1.apk`: `47DB25C98CC557A768C60716EF2BBFBF374B094F6
 - 📱 **PWA + Offline First**: Hoạt động mượt mà ngay cả khi không có kết nối Internet.
 - 🔊 **Nghe offline**: MP3, transcript/subtitle, shadowing và SSML có sẵn cho từng bài; phát âm dùng Free Dictionary API khi có mạng và Web Speech API của thiết bị khi cần.
 - 🧩 **Đánh giá theo lộ trình**: Placement test 20 câu (từ vựng, ngữ pháp, đọc hiểu) và quiz cuối bài tích hợp nghe/từ vựng/ngữ pháp, cần đạt 70% để hoàn tất.
-- 👤 **Đổi người học**: Đăng xuất nhanh trong Cài đặt; Google OAuth được bật bằng biến môi trường, không đưa secret vào APK.
+- 👤 **Đổi người học**: Xoá dữ liệu học của người đang dùng rồi làm lại bài kiểm tra từ câu 1; Google OAuth không đưa secret vào APK.
 
 ---
 
@@ -82,11 +82,20 @@ npm run build
 
 `npm run dev` mở bản thử trong LAN tại `http://192.168.1.163:5173`. Khi chạy Vite, nút ghim **Dev Local** xuất hiện ở góc dưới và trong Cài đặt để mở nhanh từ điện thoại cùng Wi-Fi.
 
-Để bật nút đăng nhập Google, tạo OAuth Client ID cho đúng origin thử nghiệm (ví dụ `http://localhost:5173`) trong Google Cloud Console, rồi thêm vào `.env.local`:
+Nút **Đăng nhập với Google** luôn có ở màn hình chào mừng. Để đăng nhập thật, cần tạo một OAuth Client ID loại **Web application** trong Google Cloud Console, rồi khai báo các **Authorized JavaScript origins** sau:
+
+- `https://eng.couple.io.vn`
+- `http://localhost:5173`
+
+Google chỉ cho phép `localhost` dùng HTTP để phát triển; nếu cần thử OAuth từ điện thoại qua Wi‑Fi, hãy dùng một URL HTTPS thay vì địa chỉ IP nội bộ.
+
+Sau đó thêm Client ID (đây là ID công khai, **không** phải Client Secret) vào `.env.local` khi chạy local:
 
 ```bash
 VITE_GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
 ```
+
+Trên Dokploy, thêm đúng biến `VITE_GOOGLE_CLIENT_ID` vào Environment của service **eng**, sau đó **Redeploy**. Vite nhúng biến này vào bundle ở lúc build nên chỉ lưu Environment thôi là chưa đủ.
 
 Access token chỉ được dùng tức thời để đọc hồ sơ Google và không lưu trong trình duyệt hoặc APK. Muốn đồng bộ tiến độ đa thiết bị, cần thêm backend để xác thực và lưu dữ liệu người học.
 
