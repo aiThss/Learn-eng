@@ -40,17 +40,16 @@ export function calculateSM2(quality: ReviewQuality, card: SRSCard): SM2Result {
       interval = Math.round(interval * easeFactor)
     }
     repetitions += 1
+
+    // SM-2 adjusts ease only after a successful recall. A failed recall
+    // restarts the interval sequence while preserving the item's E-Factor.
+    easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+    if (easeFactor < 1.3) easeFactor = 1.3
   } else {
     // Trả lời sai - reset về đầu
     repetitions = 0
     interval = 1
   }
-
-  // Cập nhật ease factor
-  easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
-  
-  // EF không được nhỏ hơn 1.3
-  if (easeFactor < 1.3) easeFactor = 1.3
   
   // Tính ngày review tiếp theo
   const dueDate = new Date()

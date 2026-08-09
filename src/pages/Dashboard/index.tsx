@@ -156,15 +156,26 @@ export default function Dashboard() {
     PHASE_3: 'B1 · Khá',
   }
 
-  // IELTS ước tính
-  const ieltsEst = progress?.estimatedIELTS?.toFixed(1) ?? '—'
+  // Only show a score estimate after a recorded assessment has supplied one.
+  const hasCalibratedEstimate = Boolean(
+    progress?.testScores.length && typeof progress.estimatedIELTS === 'number'
+  )
+  const ieltsEst = hasCalibratedEstimate ? progress?.estimatedIELTS?.toFixed(1) : '—'
 
-  // Activity feed 3 ngày gần đây (mock nếu chưa có data)
-  const recentDays = [
-    { label: 'Hôm qua', xp: 45, done: true },
-    { label: '2 ngày trước', xp: 60, done: true },
-    { label: '3 ngày trước', xp: 30, done: true },
-  ]
+  // The dashboard must never create a convincing-looking history from mock data.
+  const hasActivityToday = Boolean(
+    todayActivity && (
+      todayActivity.xpEarned > 0
+      || todayActivity.vocabularyNew > 0
+      || todayActivity.vocabularyReviewed > 0
+      || todayActivity.grammarLessons > 0
+      || todayActivity.listeningMinutes > 0
+      || todayActivity.speakingMinutes > 0
+    )
+  )
+  const recentDays = hasActivityToday
+    ? [{ label: 'Hôm nay', xp: xpToday, done: true }]
+    : []
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
@@ -188,7 +199,9 @@ export default function Dashboard() {
           <div className="flex flex-col items-center px-3 py-2 rounded-xl bg-accent border border-primary/20">
             <Star className="w-4 h-4 text-primary mb-0.5" />
             <span className="text-lg font-black text-primary">{ieltsEst}</span>
-            <span className="text-[9px] text-amber-400/70 font-semibold">IELTS est.</span>
+            <span className="text-[9px] text-amber-400/70 font-semibold">
+              {hasCalibratedEstimate ? 'IELTS' : 'Chưa đo'}
+            </span>
           </div>
         </div>
       </div>
@@ -410,6 +423,11 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+            {!recentDays.length && (
+              <p className="rounded-xl border border-border bg-card p-3 text-sm text-gray-400">
+                Chưa có hoạt động nào được ghi nhận. Hãy hoàn thành một bài học để bắt đầu theo dõi tiến độ.
+              </p>
+            )}
           </div>
         </div>
 

@@ -3,7 +3,7 @@
  * Ghi âm bằng Web Speech API, AI chấm điểm từ Gemini
  */
 import { useState, useCallback, useRef } from 'react'
-import { Mic, MicOff, Square, Loader2, Sparkles, AlertCircle, CheckCircle2, ChevronRight, MessageSquare } from 'lucide-react'
+import { Mic, MicOff, Square, Loader2, Sparkles, AlertCircle, ChevronRight, MessageSquare } from 'lucide-react'
 import { gradeSpeaking } from '@/services/ai/gemini'
 import type { SpeakingTopic } from '@/types'
 import { useProgressStore } from '@/store'
@@ -50,45 +50,9 @@ const SPEAKING_TOPICS: SpeakingTopic[] = [
 // ========================
 type RecordingState = 'idle' | 'recording' | 'processing' | 'done'
 
-interface ScoreBars {
-  content: number
-  grammar: number
-  vocabulary: number
-  pronunciation: number
-}
-
 interface SpeakingFeedback {
-  overall: number
-  scores: ScoreBars
-  strengths: string[]
-  improvements: string[]
   rawText: string
-}
-
-// ========================
-// SCORE BAR COMPONENT
-// ========================
-interface ScoreBarProps {
-  label: string
-  score: number
-  color: string
-}
-
-function ScoreBar({ label, score, color }: ScoreBarProps) {
-  return (
-    <div>
-      <div className="mb-1 flex justify-between text-sm">
-        <span className="text-gray-300">{label}</span>
-        <span className="font-semibold text-white">{score}/10</span>
-      </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-700">
-        <div
-          className={cn('h-full rounded-full transition-all duration-700', color)}
-          style={{ width: `${score * 10}%` }}
-        />
-      </div>
-    </div>
-  )
+  isFallback: boolean
 }
 
 // ========================
@@ -126,7 +90,7 @@ function TopicCard({ topic, isActive, onClick }: TopicCardProps) {
 // TRANG CHÍNH
 // ========================
 export default function SpeakingPage() {
-  const { updateTodayActivity } = useProgressStore()
+  const { todayActivity, updateTodayActivity } = useProgressStore()
 
   const [selectedTopic, setSelectedTopic] = useState<SpeakingTopic>(SPEAKING_TOPICS[0])
   const [recordingState, setRecordingState] = useState<RecordingState>('idle')
@@ -245,18 +209,26 @@ export default function SpeakingPage() {
       const result = await gradeSpeaking(transcript, selectedTopic.topic, 'A1')
 
       if (result.data) {
-        // Parse điểm từ AI response (fallback về điểm ước tính nếu parse thất bại)
-        const parsedFeedback = parseFeedback(result.data, transcript)
-        setFeedback(parsedFeedback)
-        updateTodayActivity({ speakingMinutes: Math.max(1, Math.round(recordingTime / 60)) })
+        // A transcript can support content/grammar feedback, but it contains no
+        // acoustic evidence for a pronunciation score. Keep the AI response as
+        // prose instead of fabricating numeric sub-scores.
+        setFeedback({ rawText: result.data, isFallback: Boolean(result.isFallback) })
+        updateTodayActivity({
+          speakingMinutes: (todayActivity?.speakingMinutes ?? 0) + Math.max(1, Math.round(recordingTime / 60)),
+        })
       } else {
         setAiError(result.errorMessage ?? 'Không thể nhận feedback từ AI')
-        // Tạo feedback offline cơ bản
-        setFeedback(createOfflineFeedback(transcript))
+        setFeedback({
+          rawText: 'Chưa thể tạo phản hồi chi tiết. Bạn có thể đọc lại transcript, so sánh với câu mẫu và thử nói lại chậm hơn.',
+          isFallback: true,
+        })
       }
     } catch {
       setAiError('Lỗi kết nối')
-      setFeedback(createOfflineFeedback(transcript))
+      setFeedback({
+        rawText: 'Chưa thể tạo phản hồi chi tiết. Bạn có thể đọc lại transcript, so sánh với câu mẫu và thử nói lại chậm hơn.',
+        isFallback: true,
+      })
     } finally {
       setRecordingState('done')
     }
@@ -427,58 +399,16 @@ export default function SpeakingPage() {
           <div className="rounded-2xl bg-gray-900 p-5 ring-1 ring-gray-700/50">
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-violet-400" />
-              <h3 className="font-bold text-white">AI Feedback</h3>
-              <span className="ml-auto rounded-full bg-violet-900/40 px-3 py-1 text-sm font-bold text-violet-300">
-                {feedback.overall}/10
-              </span>
+              <h3 className="font-bold text-white">Phản hồi cho transcript</h3>
             </div>
-
-            {/* Score Bars - 4 tiêu chí */}
-            <div className="mb-4 space-y-3">
-              <ScoreBar label="Nội dung (Content)" score={feedback.scores.content} color="bg-blue-500" />
-              <ScoreBar label="Ngữ pháp (Grammar)" score={feedback.scores.grammar} color="bg-emerald-500" />
-              <ScoreBar label="Từ vựng (Vocabulary)" score={feedback.scores.vocabulary} color="bg-yellow-500" />
-              <ScoreBar label="Phát âm (Pronunciation)" score={feedback.scores.pronunciation} color="bg-rose-500" />
-            </div>
-
-            {/* Điểm mạnh */}
-            {feedback.strengths.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-2 text-sm font-semibold text-emerald-400">✅ Điểm mạnh</p>
-                <ul className="space-y-1">
-                  {feedback.strengths.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Cần cải thiện */}
-            {feedback.improvements.length > 0 && (
-              <div className="mb-3">
-                <p className="mb-2 text-sm font-semibold text-yellow-400">💡 Cần cải thiện</p>
-                <ul className="space-y-1">
-                  {feedback.improvements.map((imp, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
-                      {imp}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Raw AI text */}
-            {feedback.rawText && (
-              <details className="mt-3">
-                <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-400">
-                  Xem nhận xét đầy đủ từ AI
-                </summary>
-                <p className="mt-2 whitespace-pre-line text-xs text-gray-400">{feedback.rawText}</p>
-              </details>
+            <p className="mb-3 text-xs leading-relaxed text-gray-400">
+              Nhận xét này dựa trên phần chữ được nhận diện. Ứng dụng không chấm điểm phát âm khi không có phân tích âm thanh.
+            </p>
+            <p className="whitespace-pre-line rounded-xl bg-black/20 p-3 text-sm leading-relaxed text-gray-200">
+              {feedback.rawText}
+            </p>
+            {feedback.isFallback && (
+              <p className="mt-3 text-xs text-amber-300">Đây là gợi ý ngoại tuyến, không phải điểm đánh giá.</p>
             )}
 
             {/* Nút thử lại */}
@@ -493,60 +423,4 @@ export default function SpeakingPage() {
       </div>
     </div>
   )
-}
-
-// ========================
-// HELPER FUNCTIONS
-// ========================
-
-/**
- * Parse feedback từ AI text response
- * Trả về điểm số ước tính nếu không parse được
- */
-function parseFeedback(aiText: string, transcript: string): SpeakingFeedback {
-  const wordCount = transcript.split(' ').filter(Boolean).length
-
-  // Ước tính điểm dựa trên độ dài câu trả lời
-  const baseScore = Math.min(10, Math.max(3, Math.round(wordCount / 3)))
-
-  return {
-    overall: baseScore,
-    scores: {
-      content: Math.min(10, baseScore + Math.floor(Math.random() * 2)),
-      grammar: Math.max(3, baseScore - Math.floor(Math.random() * 2)),
-      vocabulary: Math.min(10, baseScore + Math.floor(Math.random() * 2) - 1),
-      pronunciation: Math.max(3, baseScore - Math.floor(Math.random() * 3)),
-    },
-    strengths: ['Đã cố gắng trả lời câu hỏi', 'Sử dụng từ vựng phù hợp với level'],
-    improvements: ['Cần nói thêm chi tiết', 'Chú ý phát âm các âm cuối'],
-    rawText: aiText,
-  }
-}
-
-/**
- * Tạo feedback offline khi AI không khả dụng
- */
-function createOfflineFeedback(transcript: string): SpeakingFeedback {
-  const wordCount = transcript.split(' ').filter(Boolean).length
-  const baseScore = Math.min(8, Math.max(4, Math.round(wordCount / 3)))
-
-  return {
-    overall: baseScore,
-    scores: {
-      content: baseScore,
-      grammar: Math.max(3, baseScore - 1),
-      vocabulary: baseScore,
-      pronunciation: Math.max(3, baseScore - 2),
-    },
-    strengths: [
-      'Đã hoàn thành bài nói',
-      wordCount > 10 ? 'Câu trả lời có độ dài phù hợp' : 'Đã bắt đầu luyện tập',
-    ],
-    improvements: [
-      'Cần luyện thêm để nói tự nhiên hơn',
-      'Chú ý ngữ pháp câu đơn giản',
-      'Mở rộng vốn từ vựng mỗi ngày',
-    ],
-    rawText: '(Offline feedback - Kết nối AI để nhận nhận xét chi tiết hơn)',
-  }
 }

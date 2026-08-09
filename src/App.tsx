@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import AppRouter from '@/routes/AppRouter'
 import { createInitialProgress, useLessonStore, useProgressStore, useSettingsStore, useUserStore } from '@/store'
 import UpdateChecker from '@/components/updates/UpdateChecker'
+import DevLocalPin from '@/components/layout/DevLocalPin'
 import { restoreDailyStudyReminder } from '@/services/notifications/dailyReminder'
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <>
       <AppRouter />
+      <DevLocalPin />
       <UpdateChecker />
     </>
   )

@@ -39,6 +39,7 @@ import { syncDailyStudyReminder } from '@/services/notifications/dailyReminder'
 import { APP_RELEASE } from '@/config/release'
 import { DEV_LOCAL_URL, showDevLocalPin } from '@/config/devLocal'
 import { getReleaseCheckResult, type ReleaseManifest } from '@/services/release/updateCheck'
+import { useApkUpdate } from '@/components/updates/useApkUpdate'
 
 // ========================
 // Helper: Section header
@@ -228,6 +229,7 @@ export default function Settings() {
   const [updatingReminder, setUpdatingReminder] = useState(false)
   const [checkingRelease, setCheckingRelease] = useState(false)
   const [availableRelease, setAvailableRelease] = useState<ReleaseManifest | null>(null)
+  const apkUpdate = useApkUpdate()
 
   // Đồng bộ API key input
   useEffect(() => {
@@ -726,15 +728,18 @@ export default function Settings() {
             {checkingRelease ? <Loader2 className="h-4 w-4 animate-spin text-indigo-400" /> : <RefreshCw className="h-4 w-4 text-indigo-400" />}
           </button>
           {availableRelease && (
-            <a
-              href={availableRelease.downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-4 mb-3 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5"
-            >
-              <span className="text-xs font-semibold text-emerald-300">APK v{availableRelease.version} sẵn sàng tải</span>
-              <Download className="h-4 w-4 text-emerald-300" />
-            </a>
+            <>
+              <button
+                type="button"
+                onClick={() => void apkUpdate.startUpdate(availableRelease)}
+                disabled={apkUpdate.isDownloading}
+                className="mx-4 mb-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-left disabled:cursor-wait disabled:opacity-70"
+              >
+                <span className="text-xs font-semibold text-emerald-300">{apkUpdate.isDownloading ? apkUpdate.progressLabel : `Tải và cập nhật APK v${availableRelease.version}`}</span>
+                {apkUpdate.isDownloading ? <Loader2 className="h-4 w-4 animate-spin text-emerald-300" /> : <Download className="h-4 w-4 text-emerald-300" />}
+              </button>
+              {apkUpdate.error && <p className="mx-4 mb-3 text-xs leading-5 text-red-400">{apkUpdate.error}</p>}
+            </>
           )}
           <a
             href="/download"

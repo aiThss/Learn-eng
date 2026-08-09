@@ -10,7 +10,8 @@
     "moduleResolution": "nodenext",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true
   },
   "include": ["vite.config.ts", "capacitor.config.ts"]
 }

@@ -6,7 +6,6 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import TopBar from './TopBar'
-import DevLocalPin from './DevLocalPin'
 import { cn } from '@/lib/utils'
 
 // Các trang không hiển thị TopBar
@@ -45,9 +44,6 @@ export default function AppShell() {
 
       {/* Bottom Navigation */}
       {showBottomNav && <BottomNav />}
-
-      {/* Chỉ xuất hiện khi chạy Vite/LAN để test nhanh trước khi phát hành APK. */}
-      <DevLocalPin />
     </div>
   )
 }

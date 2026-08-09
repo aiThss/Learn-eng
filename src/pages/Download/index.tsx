@@ -1,8 +1,29 @@
+import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { CheckCircle2, Download, ExternalLink, QrCode, ShieldCheck, Smartphone } from 'lucide-react'
 import { ANDROID_RELEASE } from '@/config/release'
+import { useApkUpdate } from '@/components/updates/useApkUpdate'
+import { getLatestReleaseManifest } from '@/services/release/updateCheck'
 
 export default function DownloadPage() {
+  const apkUpdate = useApkUpdate()
+  const [checkingRelease, setCheckingRelease] = useState(false)
+  const [releaseError, setReleaseError] = useState<string | null>(null)
+
+  const handleDownload = async () => {
+    setCheckingRelease(true)
+    setReleaseError(null)
+    const release = await getLatestReleaseManifest()
+    setCheckingRelease(false)
+
+    if (!release) {
+      setReleaseError('Không thể xác minh bản APK mới nhất. Hãy kiểm tra kết nối rồi thử lại.')
+      return
+    }
+
+    void apkUpdate.startUpdate(release)
+  }
+
   return (
     <div className="min-h-full bg-background px-4 py-6 text-foreground sm:px-6">
       <section className="mx-auto max-w-lg space-y-5">
@@ -33,13 +54,19 @@ export default function DownloadPage() {
           </div>
         </div>
 
-        <a
-          href={ANDROID_RELEASE.downloadUrl}
+        <button
+          type="button"
+          onClick={() => void handleDownload()}
+          disabled={checkingRelease || apkUpdate.isDownloading}
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-colors hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Download className="h-5 w-5" aria-hidden="true" />
-          Tải APK v{ANDROID_RELEASE.version}
-        </a>
+          {checkingRelease || apkUpdate.isDownloading ? apkUpdate.progressLabel : `Tải và cập nhật APK v${ANDROID_RELEASE.version}`}
+        </button>
+
+        {apkUpdate.isDownloading && <p className="text-center text-sm text-muted-foreground">{apkUpdate.progressLabel}</p>}
+        {apkUpdate.error && <p className="text-center text-sm leading-6 text-destructive">{apkUpdate.error}</p>}
+        {releaseError && <p className="text-center text-sm leading-6 text-destructive">{releaseError}</p>}
 
         <div className="card-elevated space-y-3 p-4">
           <div className="flex items-center gap-2 font-semibold">

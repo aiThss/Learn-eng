@@ -121,6 +121,11 @@ export interface ListeningExercise {
   title: string
   audioUrl: string
   transcript: string
+  /** SSML portable for exporting to a cloud TTS tool; never sent to Gemini. */
+  ssml?: string
+  /** Short, line-by-line script learners can repeat after the recording. */
+  shadowingCues?: string[]
+  objectives?: string[]
   questions: ListeningQuestion[]
   difficulty: LearningPhase
   duration: number // giây

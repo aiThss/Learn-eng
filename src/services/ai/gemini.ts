@@ -41,6 +41,7 @@ const rateLimiter = new RateLimiter(10, 60000)
 let genAI: GoogleGenerativeAI | null = null
 let model: GenerativeModel | null = null
 let modelApiKey = ''
+const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-3.1-flash-lite'
 
 function getModel(): GenerativeModel | null {
   // Ưu tiên biến môi trường khi phát hành. Khóa người dùng tự nhập chỉ nằm cục bộ
@@ -53,7 +54,13 @@ function getModel(): GenerativeModel | null {
   if (!genAI || modelApiKey !== apiKey) {
     genAI = new GoogleGenerativeAI(apiKey)
     modelApiKey = apiKey
-    model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    model = genAI.getGenerativeModel({
+      model: GEMINI_MODEL,
+      generationConfig: {
+        maxOutputTokens: 900,
+        temperature: 0.4,
+      },
+    })
   }
   
   return model

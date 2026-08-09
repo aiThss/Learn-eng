@@ -1,12 +1,12 @@
 {
   "name": "englishup",
   "private": true,
-  "version": "0.0.1",
+  "version": "2.0.0",
   "type": "module",
   "description": "Ứng dụng học tiếng Anh thông minh từ A0 đến B1",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && tsc --noEmit --project tsconfig.node.json && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "cap:build": "npm run build && npx cap sync",

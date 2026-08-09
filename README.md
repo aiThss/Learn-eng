@@ -1,14 +1,14 @@
 # 🚀 EnglishUp - Học Tiếng Anh Thông Minh từ A0 đến B1
 
 <p justify="center">
-  <a href="https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.1.apk">
-    <img src="https://img.shields.io/badge/📥%20Download-Android%20APK%20v0.0.1-brightgreen.svg?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+  <a href="https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v2.0.0.apk">
+    <img src="https://img.shields.io/badge/📥%20Download-Android%20APK%20v2.0.0-brightgreen.svg?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
   <a href="https://github.com/aiThss/Learn-eng/tree/main/releases">
-    <img src="https://img.shields.io/badge/Version-v0.0.1-blue.svg?style=for-the-badge" alt="Version v0.0.1" />
+    <img src="https://img.shields.io/badge/Version-v2.0.0-blue.svg?style=for-the-badge" alt="Version v2.0.0" />
   </a>
   <img src="https://img.shields.io/badge/Platform-PWA%20%7C%20Android-orange.svg?style=for-the-badge" alt="Platform PWA Android" />
-  <img src="https://img.shields.io/badge/AI-Gemini%201.5%20Flash-purple.svg?style=for-the-badge" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/AI-Gemini%203.1%20Flash--Lite-purple.svg?style=for-the-badge" alt="Gemini AI" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License MIT" />
 </p>
 
@@ -18,19 +18,19 @@
 
 Nhấn vào nút bên dưới để tải trực tiếp file APK về điện thoại Android của bạn:
 
-👉 [**📥 Tải EnglishUp v0.0.1 APK**](https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.1.apk)
+👉 [**📥 Tải EnglishUp v2.0.0 APK**](https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v2.0.0.apk)
 
 Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến repository GitHub chính thức; luôn đối chiếu SHA-256 trong tệp `.sha256` trước khi cài đặt.
 
-SHA-256 của `EnglishUp-v0.0.1.apk`: `C37BB2282BB660745E29AD99F0CA486669158D18E1020C18A239D80088CE0BD2`
+SHA-256 của `EnglishUp-v2.0.0.apk`: `46819F5E7E14D3CEB5BEE07851F7AF44D624123C462CC07DDB66ED791D8411A7`
 
 ### 🛠️ Hướng dẫn cài đặt trên Android:
-1. Nhấn đường link trên để tải file `EnglishUp-v0.0.1.apk`.
+1. Nhấn đường link trên để tải file `EnglishUp-v2.0.0.apk`.
 2. Mở file vừa tải về và chọn **Cài đặt** (Install).
 3. Nếu thiết bị thông báo "Ứng dụng từ nguồn không xác định", hãy chọn **Cho phép từ nguồn này** (Allow from this source).
 4. Mở app **EnglishUp** và bắt đầu trải nghiệm!
 
-> Đây là dòng phát hành mới với certificate mới. Nếu máy đã có EnglishUp được ký bởi certificate cũ, hãy gỡ bản cũ trước khi cài `v0.0.1`.
+> EnglishUp v2.0.0 dùng cùng certificate với v0.0.1, nên có thể cài đè để cập nhật và giữ dữ liệu học. Các bản dùng certificate cũ hơn cần được gỡ trước khi cài.
 
 ---
 
@@ -42,7 +42,8 @@ SHA-256 của `EnglishUp-v0.0.1.apk`: `C37BB2282BB660745E29AD99F0CA486669158D18E
 - ✍️ **Luyện viết (Writing)**: Chấm điểm bài viết theo tiêu chuẩn 4 tiêu chí IELTS/TOEIC.
 - 🗺️ **Lộ trình 28 tuần (A0 → B1)**: Chia theo 4 Phase khoa học từ người mới bắt đầu / mất gốc.
 - 📱 **PWA + Offline First**: Hoạt động mượt mà ngay cả khi không có kết nối Internet.
-- 🔊 **Nghe offline**: Các bài nghe mẫu có MP3 tiếng Anh đóng gói sẵn; từ đơn dùng Free Dictionary API khi có mạng và TTS thiết bị khi cần.
+- 🔊 **Nghe offline**: MP3, transcript/subtitle, shadowing và SSML có sẵn cho từng bài; phát âm dùng Free Dictionary API khi có mạng và Web Speech API của thiết bị khi cần.
+- 🧩 **Đánh giá theo lộ trình**: Placement test 20 câu (từ vựng, ngữ pháp, đọc hiểu) và quiz cuối bài tích hợp nghe/từ vựng/ngữ pháp, cần đạt 70% để hoàn tất.
 - 👤 **Đổi người học**: Đăng xuất nhanh trong Cài đặt; Google OAuth được bật bằng biến môi trường, không đưa secret vào APK.
 
 ---
@@ -52,7 +53,7 @@ SHA-256 của `EnglishUp-v0.0.1.apk`: `C37BB2282BB660745E29AD99F0CA486669158D18E
 - **Frontend**: React 18 + TypeScript (Strict mode) + Vite 5
 - **Giao diện**: Tailwind CSS v4 + Glassmorphism Dark Mode
 - **State & Storage**: Zustand + Dexie.js (IndexedDB)
-- **AI Core**: Google Gemini 1.5 Flash API
+- **AI Core**: Gemini 3.1 Flash-Lite cho chat/feedback văn bản; phát âm dùng Web Speech API của thiết bị, không dùng Gemini TTS.
 - **Mobile Native**: Capacitor v6 (Android Engine)
 
 ---

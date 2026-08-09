@@ -7,94 +7,8 @@ import { Play, Pause, Volume2, Eye, EyeOff, ChevronDown, CheckCircle2, XCircle, 
 import type { ListeningExercise, ListeningQuestion } from '@/types'
 import { useProgressStore } from '@/store'
 import { cn } from '@/lib/utils'
-
-// ========================
-// DỮ LIỆU MẪU BÀI NGHE
-// ========================
-const LISTENING_EXERCISES: ListeningExercise[] = [
-  {
-    id: 'l001',
-    title: 'Chào hỏi cơ bản',
-    audioUrl: '/audio/greeting-dialogue.mp3',
-    transcript: `A: Hello! How are you today?
-B: Hi! I'm fine, thank you. And you?
-A: I'm good too, thanks! My name is Anna. What's your name?
-B: My name is Tom. Nice to meet you, Anna!
-A: Nice to meet you too, Tom! Where are you from?
-B: I'm from Vietnam. And you?
-A: I'm from England. Do you speak English well?
-B: A little. I'm learning English now.
-A: That's great! Keep practising!`,
-    questions: [
-      {
-        id: 'q001',
-        question: 'What is the woman\'s name?',
-        options: ['Tom', 'Anna', 'Mary', 'Lisa'],
-        correctAnswer: 1,
-        explanation: 'She said "My name is Anna"',
-      },
-      {
-        id: 'q002',
-        question: 'Where is Tom from?',
-        options: ['England', 'America', 'Vietnam', 'Japan'],
-        correctAnswer: 2,
-        explanation: 'Tom said "I\'m from Vietnam"',
-      },
-      {
-        id: 'q003',
-        question: 'What is Tom doing now?',
-        options: ['Working', 'Sleeping', 'Learning English', 'Watching TV'],
-        correctAnswer: 2,
-        explanation: 'Tom said "I\'m learning English now"',
-      },
-    ],
-    difficulty: 'PHASE_0',
-    duration: 45,
-    topic: 'Greeting',
-  },
-  {
-    id: 'l002',
-    title: 'Gọi đồ ăn tại nhà hàng',
-    audioUrl: '/audio/restaurant-dialogue.mp3',
-    transcript: `Waiter: Good evening! Welcome to Green Garden Restaurant. 
-Customer: Good evening! A table for two, please.
-Waiter: Of course! Please follow me. Here is your menu.
-Customer: Thank you. Can I have the chicken soup, please?
-Waiter: Certainly! And what would you like to drink?
-Customer: A glass of water, please.
-Waiter: Anything else?
-Customer: No, that's all. How much is it?
-Waiter: The chicken soup is ten dollars. The water is free.
-Customer: Great, thank you very much!
-Waiter: You're welcome. Enjoy your meal!`,
-    questions: [
-      {
-        id: 'q004',
-        question: 'Where does this conversation take place?',
-        options: ['A hotel', 'A restaurant', 'A school', 'A market'],
-        correctAnswer: 1,
-        explanation: 'The waiter said "Welcome to Green Garden Restaurant"',
-      },
-      {
-        id: 'q005',
-        question: 'What did the customer order to eat?',
-        options: ['Pizza', 'Chicken soup', 'Steak', 'Salad'],
-        correctAnswer: 1,
-        explanation: 'The customer said "Can I have the chicken soup"',
-      },
-      {
-        id: 'q006',
-        question: 'How much does the chicken soup cost?',
-        options: ['$5', '$8', '$10', '$15'],
-        correctAnswer: 2,
-        explanation: 'The waiter said "The chicken soup is ten dollars"',
-      },
-    ],
-    difficulty: 'PHASE_0',
-    duration: 60,
-    topic: 'Restaurant',
-  },
-]
+import { LISTENING_EXERCISES as CURRICULUM_LISTENING_EXERCISES } from '@/data/listening'
+import { speakSsml, stopSpeaking } from '@/services/speech/tts'
 
 // ========================
 // TYPES
@@ -337,12 +251,13 @@ function QuestionItem({ question, selectedAnswer, submitted, onSelect }: Questio
 // TRANG CHÍNH
 // ========================
 export default function ListeningPage() {
-  const { updateTodayActivity } = useProgressStore()
+  const { todayActivity, updateTodayActivity } = useProgressStore()
 
-  const [selectedExercise, setSelectedExercise] = useState<ListeningExercise>(LISTENING_EXERCISES[0])
+  const [selectedExercise, setSelectedExercise] = useState<ListeningExercise>(CURRICULUM_LISTENING_EXERCISES[0])
   const [showTranscript, setShowTranscript] = useState(false)
   const [speed, setSpeed] = useState<PlaybackSpeed>(1)
   const [result, setResult] = useState<ExerciseResult>({ answers: {}, submitted: false, score: 0 })
+  const [isDeviceSpeaking, setIsDeviceSpeaking] = useState(false)
 
   // Nộp bài
   const handleSubmit = () => {
@@ -352,14 +267,31 @@ export default function ListeningPage() {
     })
     const score = Math.round((correct / selectedExercise.questions.length) * 100)
     setResult(prev => ({ ...prev, submitted: true, score }))
-    updateTodayActivity({ listeningMinutes: Math.round(selectedExercise.duration / 60) })
+    updateTodayActivity({
+      listeningMinutes: (todayActivity?.listeningMinutes ?? 0) + Math.max(1, Math.round(selectedExercise.duration / 60)),
+    })
   }
 
   // Đổi bài → reset
   const handleSelectExercise = (ex: ListeningExercise) => {
+    stopSpeaking()
+    setIsDeviceSpeaking(false)
     setSelectedExercise(ex)
     setResult({ answers: {}, submitted: false, score: 0 })
     setShowTranscript(false)
+  }
+
+  const handleDeviceSpeech = () => {
+    if (isDeviceSpeaking) {
+      stopSpeaking()
+      setIsDeviceSpeaking(false)
+      return
+    }
+
+    const started = speakSsml(selectedExercise.ssml ?? selectedExercise.transcript, () => {
+      setIsDeviceSpeaking(false)
+    })
+    setIsDeviceSpeaking(started)
   }
 
   return (
@@ -379,7 +311,7 @@ export default function ListeningPage() {
 
         {/* ===== CHỌN BÀI ===== */}
         <div className="mb-4 grid grid-cols-2 gap-2">
-          {LISTENING_EXERCISES.map(ex => (
+          {CURRICULUM_LISTENING_EXERCISES.map(ex => (
             <button
               key={ex.id}
               onClick={() => handleSelectExercise(ex)}
@@ -427,6 +359,40 @@ export default function ListeningPage() {
               <pre className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300 font-sans">
                 {selectedExercise.transcript}
               </pre>
+              <div className="mt-4 border-t border-gray-700/60 pt-4">
+                <button
+                  type="button"
+                  onClick={handleDeviceSpeech}
+                  className={cn(
+                    'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors',
+                    isDeviceSpeaking
+                      ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/50'
+                      : 'bg-teal-500/15 text-teal-300 ring-1 ring-teal-500/30 hover:bg-teal-500/25'
+                  )}
+                >
+                  {isDeviceSpeaking ? <Pause className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  {isDeviceSpeaking ? 'Dừng giọng thiết bị' : 'Đọc transcript chậm bằng giọng thiết bị'}
+                </button>
+                <p className="mt-2 text-center text-[11px] text-gray-500">
+                  Dùng Web Speech API trên máy · không gọi Gemini TTS
+                </p>
+              </div>
+
+              {selectedExercise.shadowingCues && (
+                <div className="mt-4 rounded-xl bg-teal-950/30 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-teal-300">Shadowing từng câu</p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-gray-300">
+                    {selectedExercise.shadowingCues.map((cue) => <li key={cue}>↗ {cue}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {selectedExercise.ssml && (
+                <details className="mt-4 rounded-xl bg-gray-900/50 p-3 text-xs text-gray-400">
+                  <summary className="cursor-pointer font-semibold text-gray-300">Script SSML dùng cho Google Cloud TTS</summary>
+                  <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">{selectedExercise.ssml}</pre>
+                </details>
+              )}
             </div>
           )}
         </div>

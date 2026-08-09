@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Download, RefreshCw, ShieldCheck, X } from 'lucide-react'
 import { checkForAppUpdate, type ReleaseManifest } from '@/services/release/updateCheck'
 import { supportsDailyStudyReminder } from '@/services/notifications/dailyReminder'
+import { useApkUpdate } from './useApkUpdate'
 
 /** Hiện một lần mỗi lần mở APK khi GitHub có bản Android mới hơn. */
 export default function UpdateChecker() {
   const [availableRelease, setAvailableRelease] = useState<ReleaseManifest | null>(null)
+  const apkUpdate = useApkUpdate()
 
   useEffect(() => {
     if (!supportsDailyStudyReminder()) return
@@ -53,15 +55,18 @@ export default function UpdateChecker() {
           v{availableRelease.version} đã sẵn sàng. Cập nhật để nhận các cải tiến và bản sửa lỗi mới nhất.
         </p>
 
-        <a
-          href={availableRelease.downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => void apkUpdate.startUpdate(availableRelease)}
+          disabled={apkUpdate.isDownloading}
           className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-brand-700"
         >
           <Download className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-          Tải và cập nhật v{availableRelease.version}
-        </a>
+          {apkUpdate.isDownloading ? apkUpdate.progressLabel : `Tải và cập nhật v${availableRelease.version}`}
+        </button>
+
+        {apkUpdate.isDownloading && <p className="mt-3 text-center text-xs text-muted-foreground">{apkUpdate.progressLabel}</p>}
+        {apkUpdate.error && <p className="mt-3 text-xs leading-5 text-destructive">{apkUpdate.error}</p>}
 
         <p className="mt-3 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />

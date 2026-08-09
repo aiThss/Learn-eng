@@ -44,11 +44,8 @@ function isReleaseManifest(value: unknown): value is ReleaseManifest {
   )
 }
 
-/**
- * Kiểm tra metadata phát hành có timeout ngắn. Mọi lỗi mạng đều im lặng để
- * việc mở bài học offline không bị chặn hay hiện thông báo lỗi không cần thiết.
- */
-export async function getReleaseCheckResult(): Promise<ReleaseCheckResult> {
+/** Fetches and validates the signed-release manifest without comparing its version. */
+export async function getLatestReleaseManifest(): Promise<ReleaseManifest | null> {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
@@ -58,19 +55,28 @@ export async function getReleaseCheckResult(): Promise<ReleaseCheckResult> {
       signal: controller.signal,
     })
 
-    if (!response.ok) return { status: 'unavailable' }
+    if (!response.ok) return null
 
     const manifest: unknown = await response.json()
-    if (!isReleaseManifest(manifest)) return { status: 'unavailable' }
-
-    return manifest.versionCode > APP_RELEASE.versionCode
-      ? { status: 'available', release: manifest }
-      : { status: 'up-to-date', release: manifest }
+    return isReleaseManifest(manifest) ? manifest : null
   } catch {
-    return { status: 'unavailable' }
+    return null
   } finally {
     window.clearTimeout(timeoutId)
   }
+}
+
+/**
+ * Kiểm tra metadata phát hành có timeout ngắn. Mọi lỗi mạng đều im lặng để
+ * việc mở bài học offline không bị chặn hay hiện thông báo lỗi không cần thiết.
+ */
+export async function getReleaseCheckResult(): Promise<ReleaseCheckResult> {
+  const manifest = await getLatestReleaseManifest()
+  if (!manifest) return { status: 'unavailable' }
+
+  return manifest.versionCode > APP_RELEASE.versionCode
+    ? { status: 'available', release: manifest }
+    : { status: 'up-to-date', release: manifest }
 }
 
 /** Backwards-compatible lightweight check used by the startup prompt. */

@@ -46,18 +46,12 @@ Bài nói của học viên:
 ${transcript}
 """
 
-Đánh giá theo các tiêu chí sau (thang điểm 1-10):
-1. **Nội dung** (có liên quan đến chủ đề không?)
-2. **Ngữ pháp** (cấu trúc câu đúng không?)
-3. **Từ vựng** (phong phú và phù hợp không?)
-4. **Phát âm** (dựa trên transcript, đoán các từ khó phát âm)
-5. **Sự tự nhiên** (câu văn flow không?)
+Chỉ nhận xét từ transcript, không gán điểm số và không nhận xét hoặc suy đoán về phát âm vì không có dữ liệu âm thanh để đánh giá.
 
-Feedback:
-- Điểm mạnh cụ thể
-- Điểm cần cải thiện + ví dụ sửa
-- Điểm tổng thể
-- Gợi ý câu hay hơn (rewrite 1-2 câu)
+Feedback ngắn, cụ thể:
+- Điểm mạnh về nội dung, ngữ pháp hoặc từ vựng có thể quan sát từ transcript
+- 1–3 chỗ cần cải thiện, kèm ví dụ sửa nếu có
+- Gợi ý viết lại 1–2 câu tự nhiên hơn
 
 Hãy động viên và tích cực, tránh làm nản lòng học viên.
   `.trim(),

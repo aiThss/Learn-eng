@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { createLocalId } from '@/lib/localId'
 import type {
   User,
   UserSettings,
@@ -151,7 +152,7 @@ export const useProgressStore = create<ProgressStore>()(
       addXP: (xp) =>
         set((state) => ({
           progress: state.progress
-            ? { ...state.progress, totalXP: state.progress.totalXP + xp }
+            ? { ...markStudyActivity(state.progress), totalXP: state.progress.totalXP + xp }
             : null,
           todayActivity: state.todayActivity
             && state.todayActivity.date === createEmptyDailyActivity().date
@@ -188,12 +189,29 @@ export const useProgressStore = create<ProgressStore>()(
       },
       
       updateTodayActivity: (updates) =>
-        set((state) => ({
-          todayActivity: state.todayActivity
+        set((state) => {
+          const previousActivity = state.todayActivity
             && state.todayActivity.date === createEmptyDailyActivity().date
-            ? { ...state.todayActivity, ...updates }
-            : { ...createEmptyDailyActivity(), ...updates },
-        })),
+            ? state.todayActivity
+            : createEmptyDailyActivity()
+          const todayActivity = { ...previousActivity, ...updates }
+          const grammarDelta = Math.max(0, todayActivity.grammarLessons - previousActivity.grammarLessons)
+          const listeningDelta = Math.max(0, todayActivity.listeningMinutes - previousActivity.listeningMinutes)
+          const speakingDelta = Math.max(0, todayActivity.speakingMinutes - previousActivity.speakingMinutes)
+
+          return {
+            todayActivity,
+            progress: state.progress
+              ? {
+                  ...markStudyActivity(state.progress),
+                  grammarLessonsCompleted: state.progress.grammarLessonsCompleted + grammarDelta,
+                  listeningMinutes: state.progress.listeningMinutes + listeningDelta,
+                  speakingMinutes: state.progress.speakingMinutes + speakingDelta,
+                  totalStudyMinutes: state.progress.totalStudyMinutes + listeningDelta + speakingDelta,
+                }
+              : null,
+          }
+        }),
       
       incrementVocab: (isNew = false, isMastered = false) =>
         set((state) => ({
@@ -304,7 +322,7 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   isLoading: false,
-  sessionId: crypto.randomUUID(),
+  sessionId: createLocalId(),
   
   addMessage: (msg) =>
     set((state) => ({
@@ -312,7 +330,7 @@ export const useChatStore = create<ChatStore>((set) => ({
         ...state.messages,
         {
           ...msg,
-          id: crypto.randomUUID(),
+          id: createLocalId(),
           timestamp: new Date(),
         },
       ],
@@ -321,7 +339,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   setLoading: (loading) => set({ isLoading: loading }),
   
   clearChat: () =>
-    set({ messages: [], sessionId: crypto.randomUUID() }),
+    set({ messages: [], sessionId: createLocalId() }),
   
   updateLastMessage: (content, error = false) =>
     set((state) => {
@@ -375,7 +393,35 @@ export function createInitialProgress(userId: string): UserProgress {
     readingWords: 0,
     writingTasksCompleted: 0,
     testScores: [],
-    estimatedIELTS: 3.0,
-    estimatedTOEIC: 250,
+  }
+}
+
+function markStudyActivity(progress: UserProgress): UserProgress {
+  const today = new Date()
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const lastStudyDate = progress.lastStudyDate ? new Date(progress.lastStudyDate) : null
+
+  if (!lastStudyDate) {
+    return {
+      ...progress,
+      currentStreak: 1,
+      longestStreak: Math.max(1, progress.longestStreak),
+      completedDays: progress.completedDays + 1,
+      lastStudyDate: today,
+    }
+  }
+
+  const lastStart = new Date(lastStudyDate.getFullYear(), lastStudyDate.getMonth(), lastStudyDate.getDate())
+  const diffDays = Math.round((todayStart.getTime() - lastStart.getTime()) / 86_400_000)
+
+  if (diffDays <= 0) return { ...progress, lastStudyDate: today }
+
+  const currentStreak = diffDays === 1 ? progress.currentStreak + 1 : 1
+  return {
+    ...progress,
+    currentStreak,
+    longestStreak: Math.max(currentStreak, progress.longestStreak),
+    completedDays: progress.completedDays + 1,
+    lastStudyDate: today,
   }
 }

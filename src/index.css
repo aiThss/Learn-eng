@@ -344,12 +344,6 @@ html:not(.dark) .text-gray-600 { color: hsl(217 19% 38%) !important; }
 html:not(.dark) .bg-gray-950 .text-white:not([class*="bg-"]),
 html:not(.dark) .bg-gray-900 .text-white:not([class*="bg-"]),
 html:not(.dark) .bg-gray-800 .text-white:not([class*="bg-"]) { color: var(--color-foreground) !important; }
-html:not(.dark) .bg-indigo-500 .text-white,
-html:not(.dark) .bg-indigo-600 .text-white,
-html:not(.dark) .bg-emerald-600 .text-white,
-html:not(.dark) .bg-red-600 .text-white,
-html:not(.dark) .bg-gradient-to-r .text-white,
-html:not(.dark) .bg-gradient-to-br .text-white { color: white !important; }
 html:not(.dark) .from-gray-900 .text-white,
 html:not(.dark) .from-gray-800 .text-white { color: var(--color-foreground) !important; }
 
@@ -359,33 +353,6 @@ html:not(.dark) .from-gray-800 .text-white { color: var(--color-foreground) !imp
  * indigo, sage, coral and warm-brown hierarchy. This keeps every route calm
  * while the modules are progressively migrated to semantic utility classes.
  */
-html:not(.dark) [class~="text-white"][class*="bg-gray-"] { color: var(--color-foreground) !important; }
-html:not(.dark) [class~="text-white"][class*="bg-indigo-"],
-html:not(.dark) [class~="text-white"][class*="bg-blue-"],
-html:not(.dark) [class~="text-white"][class*="bg-purple-"],
-html:not(.dark) [class~="text-white"][class*="bg-violet-"],
-html:not(.dark) [class~="text-white"][class*="bg-emerald-"],
-html:not(.dark) [class~="text-white"][class*="bg-green-"],
-html:not(.dark) [class~="text-white"][class*="bg-teal-"],
-html:not(.dark) [class~="text-white"][class*="bg-red-"],
-html:not(.dark) [class~="text-white"][class*="bg-rose-"],
-html:not(.dark) [class~="text-white"][class*="bg-pink-"],
-html:not(.dark) [class~="text-white"][class*="bg-amber-"],
-html:not(.dark) [class~="text-white"][class*="bg-orange-"],
-html:not(.dark) [class~="text-white"][class*="bg-gradient-to-"] { color: #fff !important; }
-html:not(.dark) .bg-gray-950 [class*="bg-gradient-to-"] .text-white,
-html:not(.dark) .bg-gray-900 [class*="bg-gradient-to-"] .text-white,
-html:not(.dark) .bg-gray-800 [class*="bg-gradient-to-"] .text-white,
-html:not(.dark) .bg-gray-950 [class*="bg-indigo-"] .text-white,
-html:not(.dark) .bg-gray-900 [class*="bg-indigo-"] .text-white,
-html:not(.dark) .bg-gray-800 [class*="bg-indigo-"] .text-white,
-html:not(.dark) .bg-gray-950 [class*="bg-emerald-"] .text-white,
-html:not(.dark) .bg-gray-900 [class*="bg-emerald-"] .text-white,
-html:not(.dark) .bg-gray-800 [class*="bg-emerald-"] .text-white,
-html:not(.dark) .bg-gray-950 [class*="bg-red-"] .text-white,
-html:not(.dark) .bg-gray-900 [class*="bg-red-"] .text-white,
-html:not(.dark) .bg-gray-800 [class*="bg-red-"] .text-white { color: #fff !important; }
-
 /* Never use decorative gradients in study flows: one surface, one meaning. */
 html:not(.dark) [class*="bg-gradient-to-"] { background-image: none !important; }
 html:not(.dark) [class*="bg-gradient-to-"][class*="from-gray-"] { background-color: var(--color-card) !important; }
@@ -619,4 +586,160 @@ html:not(.dark) [class~="hover:text-white"][class*="bg-amber-"][class*="/"]:hove
 html:not(.dark) [class~="hover:text-white"][class*="bg-orange-"][class*="/"]:hover,
 html:not(.dark) [class~="hover:text-white"][class*="bg-yellow-"][class*="/"]:hover {
   color: var(--color-foreground) !important;
+}
+
+/*
+ * Final light-mode contrast guard.
+ *
+ * Legacy screens often put `text-white` on a child while the parent owns a
+ * translucent colour utility such as `bg-indigo-500/20`. Earlier bridge rules
+ * only matched the same element, leaving white text at WCAG-failing contrast.
+ * In light mode text is dark by default; white is restored only on solid,
+ * intentionally saturated actions and dark surfaces.
+ */
+html:not(.dark) .text-white {
+  color: var(--color-foreground) !important;
+}
+
+html:not(.dark) [class~="text-white"][class*="bg-"][class*="/"] {
+  color: var(--color-foreground) !important;
+}
+
+html:not(.dark) :is(
+  [class~="bg-primary"],
+  [class~="bg-brand-500"],
+  [class~="bg-brand-600"],
+  [class~="bg-brand-700"],
+  [class~="bg-indigo-500"],
+  [class~="bg-indigo-600"],
+  [class~="bg-indigo-700"],
+  [class~="bg-blue-500"],
+  [class~="bg-blue-600"],
+  [class~="bg-purple-500"],
+  [class~="bg-purple-600"],
+  [class~="bg-purple-700"],
+  [class~="bg-violet-500"],
+  [class~="bg-violet-600"],
+  [class~="bg-violet-700"],
+  [class~="bg-green-500"],
+  [class~="bg-green-600"],
+  [class~="bg-emerald-500"],
+  [class~="bg-emerald-600"],
+  [class~="bg-teal-500"],
+  [class~="bg-teal-600"],
+  [class~="bg-red-500"],
+  [class~="bg-red-600"],
+  [class~="bg-rose-500"],
+  [class~="bg-rose-600"],
+  [class~="bg-pink-500"],
+  [class~="bg-pink-600"],
+  [class~="bg-amber-500"],
+  [class~="bg-amber-600"],
+  [class~="bg-orange-500"],
+  [class~="bg-orange-600"],
+  [class~="bg-yellow-500"],
+  [class~="bg-yellow-600"],
+  [class~="bg-slate-900"],
+  [class~="bg-slate-950"],
+  [class~="bg-black"]
+) .text-white,
+html:not(.dark) :is(
+  [class~="bg-primary"],
+  [class~="bg-brand-500"],
+  [class~="bg-brand-600"],
+  [class~="bg-brand-700"],
+  [class~="bg-indigo-500"],
+  [class~="bg-indigo-600"],
+  [class~="bg-indigo-700"],
+  [class~="bg-blue-500"],
+  [class~="bg-blue-600"],
+  [class~="bg-purple-500"],
+  [class~="bg-purple-600"],
+  [class~="bg-purple-700"],
+  [class~="bg-violet-500"],
+  [class~="bg-violet-600"],
+  [class~="bg-violet-700"],
+  [class~="bg-green-500"],
+  [class~="bg-green-600"],
+  [class~="bg-emerald-500"],
+  [class~="bg-emerald-600"],
+  [class~="bg-teal-500"],
+  [class~="bg-teal-600"],
+  [class~="bg-red-500"],
+  [class~="bg-red-600"],
+  [class~="bg-rose-500"],
+  [class~="bg-rose-600"],
+  [class~="bg-pink-500"],
+  [class~="bg-pink-600"],
+  [class~="bg-amber-500"],
+  [class~="bg-amber-600"],
+  [class~="bg-orange-500"],
+  [class~="bg-orange-600"],
+  [class~="bg-yellow-500"],
+  [class~="bg-yellow-600"],
+  [class~="bg-slate-900"],
+  [class~="bg-slate-950"],
+  [class~="bg-black"]
+).text-white {
+  color: #fff !important;
+}
+
+/* Gradients whose source colour is a 500–700 shade are normalized to a
+ * saturated action surface above, so white labels retain sufficient contrast.
+ * Pale 900/transparent gradients deliberately fall through to dark text. */
+html:not(.dark) [class*="bg-gradient-to-"]:is(
+  [class*="from-brand-"],
+  [class*="from-indigo-5"],
+  [class*="from-indigo-6"],
+  [class*="from-indigo-7"],
+  [class*="from-indigo-8"],
+  [class*="from-purple-5"],
+  [class*="from-purple-6"],
+  [class*="from-violet-5"],
+  [class*="from-violet-6"],
+  [class*="from-blue-5"],
+  [class*="from-emerald-5"],
+  [class*="from-emerald-6"],
+  [class*="from-green-5"],
+  [class*="from-teal-5"],
+  [class*="from-teal-6"],
+  [class*="from-rose-5"],
+  [class*="from-rose-6"],
+  [class*="from-pink-5"],
+  [class*="from-pink-6"],
+  [class*="from-amber-5"],
+  [class*="from-amber-6"],
+  [class*="from-orange-5"],
+  [class*="from-orange-6"],
+  [class*="from-yellow-5"],
+  [class*="from-yellow-6"]
+) .text-white,
+html:not(.dark) [class*="bg-gradient-to-"]:is(
+  [class*="from-brand-"],
+  [class*="from-indigo-5"],
+  [class*="from-indigo-6"],
+  [class*="from-indigo-7"],
+  [class*="from-indigo-8"],
+  [class*="from-purple-5"],
+  [class*="from-purple-6"],
+  [class*="from-violet-5"],
+  [class*="from-violet-6"],
+  [class*="from-blue-5"],
+  [class*="from-emerald-5"],
+  [class*="from-emerald-6"],
+  [class*="from-green-5"],
+  [class*="from-teal-5"],
+  [class*="from-teal-6"],
+  [class*="from-rose-5"],
+  [class*="from-rose-6"],
+  [class*="from-pink-5"],
+  [class*="from-pink-6"],
+  [class*="from-amber-5"],
+  [class*="from-amber-6"],
+  [class*="from-orange-5"],
+  [class*="from-orange-6"],
+  [class*="from-yellow-5"],
+  [class*="from-yellow-6"]
+).text-white {
+  color: #fff !important;
 }

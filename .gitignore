@@ -13,6 +13,14 @@ ios/
 .env.local
 .env.*.local
 
+# TypeScript build caches and legacy JavaScript config output. Vite and
+# Capacitor load the TypeScript configuration files directly.
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+capacitor.config.js
+capacitor.config.d.ts
+
 # Logs
 logs
 *.log

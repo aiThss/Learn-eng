@@ -29,7 +29,7 @@ export class EnglishUpDB extends Dexie {
   testScores!: Table<TestScore>
   userSettings!: Table<UserSettings & { id?: number }>
   weekPlans!: Table<WeekPlan & { id?: number }>
-  completedLessons!: Table<{ id: string; lessonId: string; userId: string; completedAt: Date; score?: number }>
+  completedLessons!: Table<CompletedLesson>
 
   constructor() {
     super('EnglishUpDB')
@@ -61,6 +61,15 @@ export class EnglishUpDB extends Dexie {
 
 // Singleton instance
 export const db = new EnglishUpDB()
+
+export interface CompletedLesson {
+  /** A stable per-user key prevents the same lesson being rewarded twice. */
+  id: string
+  lessonId: string
+  userId: string
+  completedAt: Date
+  score?: number
+}
 
 // ========================
 // DATABASE HELPER FUNCTIONS
@@ -98,9 +107,44 @@ export async function getNewWords(userId: string, phase: string, limit = 10): Pr
  * Lưu kết quả SRS review (cập nhật SM-2 params)
  */
 export async function updateSRSCard(card: SRSCard): Promise<void> {
-  await db.srsCards
+  const existing = await db.srsCards
     .where({ wordId: card.wordId, userId: card.userId })
-    .modify(card)
+    .first()
+
+  if (existing?.id === undefined) return
+
+  // Update by the IndexedDB primary key. Passing the whole card to `modify`
+  // can accidentally include a primary key when callers later add one.
+  await db.srsCards.update(existing.id, card)
+}
+
+export function getCompletedLessonKey(userId: string, lessonId: string): string {
+  return `${userId}:${lessonId}`
+}
+
+/**
+ * Marks a lesson complete atomically. Returns true only for the first
+ * completion, so XP can safely be awarded exactly once after a reload.
+ */
+export async function completeLessonOnce(
+  userId: string,
+  lessonId: string,
+  score?: number,
+): Promise<boolean> {
+  const id = getCompletedLessonKey(userId, lessonId)
+
+  return db.transaction('rw', db.completedLessons, async () => {
+    if (await db.completedLessons.get(id)) return false
+
+    await db.completedLessons.add({
+      id,
+      userId,
+      lessonId,
+      completedAt: new Date(),
+      score,
+    })
+    return true
+  })
 }
 
 /**

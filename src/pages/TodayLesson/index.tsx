@@ -2,7 +2,7 @@
  * TodayLesson - Trang bài học hôm nay
  * Bao gồm 4 tab: Từ vựng, Ngữ pháp, Nghe, Luyện tập
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   BookOpen,
@@ -20,7 +20,12 @@ import {
   Award,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useProgressStore, useLessonStore } from '@/store'
+import { useProgressStore, useLessonStore, useUserStore } from '@/store'
+import { completeLessonOnce, db, getCompletedLessonKey } from '@/services/db/schema'
+import { DAILY_STUDY_LISTENING, LISTENING_EXERCISES } from '@/data/listening'
+import { speakSsml, stopSpeaking } from '@/services/speech/tts'
+import { playPronunciation } from '@/services/speech/pronunciation'
+import type { LearningPhase, ListeningExercise } from '@/types'
 
 // ========================
 // Dữ liệu mock bài học
@@ -54,6 +59,20 @@ const MOCK_GRAMMAR = {
 }
 
 const MOCK_EXERCISES = [
+  {
+    id: 'e0',
+    question: 'What does "opportunity" mean?',
+    options: ['Thử thách', 'Cơ hội', 'Kinh nghiệm', 'Môi trường'],
+    correct: 1,
+    explanation: 'Opportunity nghĩa là cơ hội; đây là từ vựng trọng tâm của bài.',
+  },
+  {
+    id: 'e-listening',
+    question: 'Choose the sentence that matches Mia\'s study routine.',
+    options: ['She studies English for two hours every day.', 'She studies English only on Sunday.', 'She watches films before bed.', 'She never reviews new words.'],
+    correct: 0,
+    explanation: 'Mia nói cô ấy học tiếng Anh hai giờ mỗi ngày và ôn lại từ vào Chủ nhật.',
+  },
   {
     id: 'e1',
     question: 'She _____ to Paris three times.',
@@ -91,6 +110,116 @@ const MOCK_EXERCISES = [
   },
 ]
 
+type TodayLessonPlan = {
+  title: string
+  levelLabel: string
+  vocabulary: typeof MOCK_VOCAB
+  grammar: typeof MOCK_GRAMMAR
+  exercises: typeof MOCK_EXERCISES
+  listening: ListeningExercise
+}
+
+const PHASE_TODAY_LESSONS: Record<LearningPhase, TodayLessonPlan> = {
+  PHASE_0: {
+    title: 'Lesson 1.1 · Chào hỏi & giới thiệu',
+    levelLabel: 'A0 · Làm quen',
+    vocabulary: [
+      { word: 'hello', pronunciation: '/həˈləʊ/', meaning: 'xin chào', example: 'Hello! Nice to meet you.' },
+      { word: 'name', pronunciation: '/neɪm/', meaning: 'tên', example: 'My name is Lan.' },
+      { word: 'from', pronunciation: '/frɒm/', meaning: 'đến từ', example: 'I am from Vietnam.' },
+      { word: 'thank you', pronunciation: '/ˈθæŋk juː/', meaning: 'cảm ơn', example: 'Thank you very much.' },
+      { word: 'please', pronunciation: '/pliːz/', meaning: 'làm ơn', example: 'Please say that again.' },
+    ],
+    grammar: {
+      title: 'Verb to be', titleVi: 'Động từ to be', structure: 'S + am / is / are',
+      explanation: 'Use am, is and are to introduce people and simple facts.',
+      explanationVi: 'Dùng am, is, are để nói về bản thân, người khác và thông tin cơ bản. Người Việt thường quên động từ to be trong câu.',
+      uses: [
+        { label: 'Giới thiệu bản thân', example: 'I am Minh.', vi: 'Tôi là Minh.' },
+        { label: 'Hỏi thông tin', example: 'Where are you from?', vi: 'Bạn đến từ đâu?' },
+        { label: 'Nói về người khác', example: 'She is my friend.', vi: 'Cô ấy là bạn tôi.' },
+      ],
+      keywords: ['am, is, are'],
+    },
+    exercises: [
+      { id: 'a0-1', question: 'I _____ from Vietnam.', options: ['am', 'is', 'are', 'be'], correct: 0, explanation: 'Dùng am với chủ ngữ I.' },
+      { id: 'a0-2', question: 'She _____ my friend.', options: ['am', 'is', 'are', 'be'], correct: 1, explanation: 'Dùng is với she.' },
+      { id: 'a0-3', question: 'Choose the polite phrase:', options: ['Please', 'Yesterday', 'Blue', 'Seven'], correct: 0, explanation: 'Please là từ lịch sự khi nhờ ai đó.' },
+      { id: 'a0-4', question: '“My name is Nam.” means:', options: ['Tôi khỏe', 'Tên tôi là Nam', 'Tôi ở nhà', 'Tôi thích Nam'], correct: 1, explanation: 'My name is… dùng để giới thiệu tên.' },
+      { id: 'a0-5', question: 'They _____ students.', options: ['am', 'is', 'are', 'be'], correct: 2, explanation: 'Dùng are với they.' },
+    ],
+    listening: LISTENING_EXERCISES[0],
+  },
+  PHASE_1: {
+    title: 'Lesson 1.1 · Thói quen học tập',
+    levelLabel: 'A1 · Cơ bản',
+    vocabulary: [
+      { word: 'routine', pronunciation: '/ruːˈtiːn/', meaning: 'thói quen', example: 'My routine is simple.' },
+      { word: 'review', pronunciation: '/rɪˈvjuː/', meaning: 'ôn lại', example: 'I review new words.' },
+      { word: 'repeat', pronunciation: '/rɪˈpiːt/', meaning: 'lặp lại', example: 'Repeat the sentence, please.' },
+      { word: 'before', pronunciation: '/bɪˈfɔː(r)/', meaning: 'trước', example: 'I read before bed.' },
+      { word: 'confident', pronunciation: '/ˈkɒnfɪdənt/', meaning: 'tự tin', example: 'I feel confident today.' },
+    ],
+    grammar: {
+      title: 'Present Simple', titleVi: 'Thì hiện tại đơn', structure: 'S + V / V-s(es)',
+      explanation: 'Use the present simple for routines and facts.',
+      explanationVi: 'Dùng hiện tại đơn cho thói quen. Với he/she/it, động từ thường thêm -s/-es; đây là lỗi người Việt rất hay bỏ sót.',
+      uses: [
+        { label: 'Thói quen', example: 'I study every day.', vi: 'Tôi học mỗi ngày.' },
+        { label: 'Ngôi thứ ba', example: 'Mia reviews new words.', vi: 'Mia ôn từ mới.' },
+        { label: 'Câu hỏi', example: 'Do you practise English?', vi: 'Bạn có luyện tiếng Anh không?' },
+      ],
+      keywords: ['every day, usually, often, always'],
+    },
+    exercises: [
+      { id: 'a1-1', question: 'Mia _____ English every day.', options: ['study', 'studies', 'studied', 'studying'], correct: 1, explanation: 'Mia là ngôi thứ ba số ít nên dùng studies.' },
+      { id: 'a1-2', question: 'I _____ ten words in the morning.', options: ['review', 'reviews', 'reviewed', 'reviewing'], correct: 0, explanation: 'Dùng review với chủ ngữ I.' },
+      { id: 'a1-3', question: 'Choose the correct question:', options: ['Do you practise?', 'You practise do?', 'Practise you?', 'Are practise you?'], correct: 0, explanation: 'Hiện tại đơn dùng Do/Does để hỏi.' },
+      { id: 'a1-4', question: '“Repeat” means:', options: ['Lắng nghe', 'Lặp lại', 'Viết', 'Dịch'], correct: 1, explanation: 'Repeat nghĩa là lặp lại.' },
+      { id: 'a1-5', question: 'She _____ confident.', options: ['feel', 'feels', 'felt', 'feeling'], correct: 1, explanation: 'She đi với feels trong hiện tại đơn.' },
+    ],
+    listening: DAILY_STUDY_LISTENING,
+  },
+  PHASE_2: {
+    title: 'Lesson 1.1 · Trải nghiệm nhà hàng',
+    levelLabel: 'A2 · Trung cấp',
+    vocabulary: [
+      { word: 'menu', pronunciation: '/ˈmenjuː/', meaning: 'thực đơn', example: 'Here is the menu.' },
+      { word: 'order', pronunciation: '/ˈɔːdə(r)/', meaning: 'gọi món', example: 'I would like to order soup.' },
+      { word: 'certainly', pronunciation: '/ˈsɜːtnli/', meaning: 'chắc chắn rồi', example: 'Certainly. Please sit down.' },
+      { word: 'anything else', pronunciation: '/ˌeniθɪŋ ˈels/', meaning: 'còn gì khác không', example: 'Would you like anything else?' },
+      { word: 'price', pronunciation: '/praɪs/', meaning: 'giá tiền', example: 'What is the price?' },
+    ],
+    grammar: {
+      title: 'Polite requests', titleVi: 'Yêu cầu lịch sự', structure: 'Can I have …? / I would like …',
+      explanation: 'Use these forms to order food and make polite requests.',
+      explanationVi: 'Can I have…? và I would like… lịch sự hơn nói thẳng “Give me”. Hãy dùng please để giọng nói mềm mại hơn.',
+      uses: [
+        { label: 'Gọi món', example: 'Can I have the soup, please?', vi: 'Cho tôi món súp, làm ơn.' },
+        { label: 'Đồ uống', example: 'I would like a glass of water.', vi: 'Tôi muốn một cốc nước.' },
+        { label: 'Hỏi giá', example: 'How much is it?', vi: 'Nó bao nhiêu tiền?' },
+      ],
+      keywords: ['can I, would like, please'],
+    },
+    exercises: [
+      { id: 'a2-1', question: '_____ I have a table for two, please?', options: ['Can', 'Do', 'Am', 'Did'], correct: 0, explanation: 'Can I have…? là mẫu yêu cầu lịch sự.' },
+      { id: 'a2-2', question: 'I would like _____ water.', options: ['a glass of', 'many', 'an', 'some a'], correct: 0, explanation: 'A glass of water là một cụm danh từ đúng.' },
+      { id: 'a2-3', question: '“Anything else?” asks about:', options: ['Thời gian', 'Món gọi thêm', 'Địa chỉ', 'Công việc'], correct: 1, explanation: 'Nhân viên hỏi bạn có muốn gọi thêm không.' },
+      { id: 'a2-4', question: 'Which sentence is most polite?', options: ['Give me soup.', 'Soup now.', 'Can I have soup, please?', 'I soup.'], correct: 2, explanation: 'Can I have… please? lịch sự và tự nhiên.' },
+      { id: 'a2-5', question: 'How _____ is it?', options: ['much', 'many', 'long', 'old'], correct: 0, explanation: 'How much dùng để hỏi giá tiền.' },
+    ],
+    listening: LISTENING_EXERCISES[1],
+  },
+  PHASE_3: {
+    title: 'Lesson 1.1 · Kinh nghiệm & phát triển',
+    levelLabel: 'B1 · Khá',
+    vocabulary: MOCK_VOCAB,
+    grammar: MOCK_GRAMMAR,
+    exercises: MOCK_EXERCISES,
+    listening: DAILY_STUDY_LISTENING,
+  },
+}
+
 // ========================
 // Tab types
 // ========================
@@ -108,7 +237,7 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
 // ========================
 
 /** Vocabulary tab */
-function VocabTab({ isUnlocked }: { isUnlocked: boolean }) {
+function VocabTab({ isUnlocked, lesson }: { isUnlocked: boolean; lesson: TodayLessonPlan }) {
   const [playingIdx, setPlayingIdx] = useState<number | null>(null)
 
   if (!isUnlocked) return <LockedTab />
@@ -116,14 +245,14 @@ function VocabTab({ isUnlocked }: { isUnlocked: boolean }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-black text-white">10 từ mới hôm nay</h3>
+        <h3 className="text-base font-black text-white">{lesson.vocabulary.length} từ mới hôm nay</h3>
         <button className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 rounded-xl active:scale-95 transition-transform">
           <Play className="w-4 h-4" />
           Học tất cả
         </button>
       </div>
 
-      {MOCK_VOCAB.map((item, i) => (
+      {lesson.vocabulary.map((item, i) => (
         <div
           key={i}
           className="bg-gray-800/60 border border-gray-700/40 rounded-xl p-4"
@@ -138,7 +267,15 @@ function VocabTab({ isUnlocked }: { isUnlocked: boolean }) {
               <p className="text-xs text-gray-400 mt-1.5 italic">"{item.example}"</p>
             </div>
             <button
-              onClick={() => setPlayingIdx(playingIdx === i ? null : i)}
+              onClick={() => {
+                if (playingIdx === i) {
+                  stopSpeaking()
+                  setPlayingIdx(null)
+                  return
+                }
+                setPlayingIdx(i)
+                void playPronunciation(item.word).finally(() => setPlayingIdx(null))
+              }}
               className={cn(
                 'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all',
                 playingIdx === i
@@ -156,8 +293,9 @@ function VocabTab({ isUnlocked }: { isUnlocked: boolean }) {
 }
 
 /** Grammar tab */
-function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
+function GrammarTab({ isUnlocked, lesson }: { isUnlocked: boolean; lesson: TodayLessonPlan }) {
   if (!isUnlocked) return <LockedTab />
+  const grammar = lesson.grammar
 
   return (
     <div className="space-y-5">
@@ -166,9 +304,9 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
         <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">
           Ngữ pháp hôm nay
         </span>
-        <h3 className="text-xl font-black text-white mt-1">{MOCK_GRAMMAR.titleVi}</h3>
+        <h3 className="text-xl font-black text-white mt-1">{grammar.titleVi}</h3>
         <code className="inline-block mt-2 px-3 py-1.5 bg-gray-900/60 rounded-lg text-sm font-mono text-indigo-300 border border-indigo-500/20">
-          {MOCK_GRAMMAR.structure}
+          {grammar.structure}
         </code>
       </div>
 
@@ -176,7 +314,7 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
       <div>
         <h4 className="text-sm font-bold text-gray-300 mb-2">📖 Giải thích</h4>
         <p className="text-sm text-gray-300 leading-relaxed bg-gray-800/50 border border-gray-700/30 rounded-xl p-4">
-          {MOCK_GRAMMAR.explanationVi}
+          {grammar.explanationVi}
         </p>
       </div>
 
@@ -184,7 +322,7 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
       <div>
         <h4 className="text-sm font-bold text-gray-300 mb-3">🎯 Cách dùng</h4>
         <div className="space-y-3">
-          {MOCK_GRAMMAR.uses.map((use, i) => (
+          {grammar.uses.map((use, i) => (
             <div
               key={i}
               className="bg-gray-800/50 border border-gray-700/30 rounded-xl p-4"
@@ -203,7 +341,7 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
       <div>
         <h4 className="text-sm font-bold text-gray-300 mb-2">🔑 Từ khóa nhận biết</h4>
         <div className="flex flex-wrap gap-2">
-          {MOCK_GRAMMAR.keywords[0].split(', ').map((kw, i) => (
+          {grammar.keywords.flatMap((keyword) => keyword.split(', ')).map((kw, i) => (
             <span
               key={i}
               className="text-sm font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full"
@@ -218,27 +356,22 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
 }
 
 /** Listening tab */
-function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
+function ListeningTab({ isUnlocked, listening }: { isUnlocked: boolean; listening: ListeningExercise }) {
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
-  const [audioDuration, setAudioDuration] = useState(38)
+  const [audioDuration, setAudioDuration] = useState(listening.duration)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({})
+  const [showTranscript, setShowTranscript] = useState(false)
+  const [isDeviceSpeaking, setIsDeviceSpeaking] = useState(false)
 
   if (!isUnlocked) return <LockedTab />
 
-  const questions = [
-    {
-      q: 'What is the main topic of the audio?',
-      options: ['Travel plans', 'Work schedule', 'Study habits', 'Weekend activities'],
-      correct: 2,
-    },
-    {
-      q: 'How long does the speaker study each day?',
-      options: ['1 hour', '2 hours', '3 hours', '30 minutes'],
-      correct: 1,
-    },
-  ]
+  const questions = listening.questions.map((question) => ({
+    q: question.question,
+    options: question.options,
+    correct: question.correctAnswer,
+  }))
   const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`
 
   return (
@@ -249,12 +382,12 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
           Audio · {formatTime(audioDuration)}
         </p>
         <h3 className="text-base font-black text-white mb-4">
-          "My Daily Study Routine"
+          {listening.title}
         </h3>
 
         <audio
           ref={audioRef}
-          src="/audio/daily-study-routine.mp3"
+          src={listening.audioUrl}
           preload="metadata"
           onLoadedMetadata={() => {
             const duration = audioRef.current?.duration
@@ -310,6 +443,43 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
             {`${formatTime(currentTime)} / ${formatTime(audioDuration)}`}
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (isDeviceSpeaking) {
+              stopSpeaking()
+              setIsDeviceSpeaking(false)
+              return
+            }
+            setIsDeviceSpeaking(speakSsml(listening.ssml ?? listening.transcript, () => setIsDeviceSpeaking(false)))
+          }}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-teal-500/15 px-3 py-2.5 text-xs font-bold text-teal-200 ring-1 ring-teal-400/30"
+        >
+          <Volume2 className="h-4 w-4" />
+          {isDeviceSpeaking ? 'Dừng giọng thiết bị' : 'Đọc chậm bằng Web Speech'}
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-gray-700/40 bg-gray-800/50">
+        <button
+          type="button"
+          onClick={() => setShowTranscript((visible) => !visible)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-bold text-white"
+        >
+          Subtitle & shadowing
+          <ChevronRight className={cn('h-4 w-4 transition-transform', showTranscript && 'rotate-90')} />
+        </button>
+        {showTranscript && (
+          <div className="border-t border-gray-700/40 px-4 pb-4 pt-3">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{listening.transcript}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {listening.shadowingCues?.map((cue) => (
+                <span key={cue} className="rounded-full bg-teal-500/10 px-2.5 py-1 text-xs text-teal-200">↗ {cue}</span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Câu hỏi */}
@@ -348,36 +518,46 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
   )
 }
 
-/** Practice tab với 5 bài tập */
-function PracticeTab({ isUnlocked }: { isUnlocked: boolean }) {
+/** Exit quiz: requires retrieval across vocabulary, grammar and listening. */
+function PracticeTab({
+  isUnlocked,
+  exercises,
+  onQuizStatusChange,
+}: {
+  isUnlocked: boolean
+  exercises: TodayLessonPlan['exercises']
+  onQuizStatusChange: (passed: boolean) => void
+}) {
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
 
   if (!isUnlocked) return <LockedTab />
 
   const handleSubmit = () => {
-    if (Object.keys(answers).length === MOCK_EXERCISES.length) {
+    if (Object.keys(answers).length === exercises.length) {
+      const correct = exercises.filter((ex) => answers[ex.id] === ex.correct).length
+      onQuizStatusChange(correct / exercises.length >= 0.7)
       setSubmitted(true)
     }
   }
 
   const correctCount = submitted
-    ? MOCK_EXERCISES.filter((ex) => answers[ex.id] === ex.correct).length
+    ? exercises.filter((ex) => answers[ex.id] === ex.correct).length
     : 0
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-black text-white">5 bài tập luyện tập</h3>
+        <h3 className="text-base font-black text-white">Quiz cuối bài</h3>
         {submitted && (
           <div className="flex items-center gap-1.5 text-sm font-bold text-amber-400">
             <Star className="w-4 h-4" />
-            {correctCount}/{MOCK_EXERCISES.length} đúng
+            {correctCount}/{exercises.length} đúng
           </div>
         )}
       </div>
 
-      {MOCK_EXERCISES.map((ex, idx) => (
+      {exercises.map((ex, idx) => (
         <div
           key={ex.id}
           className="bg-gray-800/50 border border-gray-700/30 rounded-xl p-4 space-y-3"
@@ -440,18 +620,46 @@ function PracticeTab({ isUnlocked }: { isUnlocked: boolean }) {
       {!submitted && (
         <button
           onClick={handleSubmit}
-          disabled={Object.keys(answers).length < MOCK_EXERCISES.length}
+          disabled={Object.keys(answers).length < exercises.length}
           className={cn(
             'w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]',
-            Object.keys(answers).length === MOCK_EXERCISES.length
+            Object.keys(answers).length === exercises.length
               ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
               : 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
           )}
         >
-          {Object.keys(answers).length < MOCK_EXERCISES.length
-            ? `Trả lời ${MOCK_EXERCISES.length - Object.keys(answers).length} câu nữa`
+          {Object.keys(answers).length < exercises.length
+            ? `Trả lời ${exercises.length - Object.keys(answers).length} câu nữa`
             : 'Kiểm tra kết quả'}
         </button>
+      )}
+
+      {submitted && (
+        <div className={cn(
+          'rounded-xl border p-4 text-sm',
+          correctCount / exercises.length >= 0.7
+            ? 'border-green-500/30 bg-green-500/10 text-green-200'
+            : 'border-amber-500/30 bg-amber-500/10 text-amber-100'
+        )}>
+          <p className="font-bold">
+            {correctCount / exercises.length >= 0.7
+              ? 'Đạt quiz: bạn có thể hoàn thành bài học.'
+              : 'Chưa đạt 70%: xem lại giải thích rồi làm lại quiz nhé.'}
+          </p>
+          {correctCount / exercises.length < 0.7 && (
+            <button
+              type="button"
+              onClick={() => {
+                setAnswers({})
+                setSubmitted(false)
+                onQuizStatusChange(false)
+              }}
+              className="mt-3 rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-amber-950"
+            >
+              Làm lại quiz
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
@@ -478,11 +686,39 @@ function LockedTab() {
 export default function TodayLesson() {
   const navigate = useNavigate()
   const { addXP } = useProgressStore()
-  const { currentWeek } = useLessonStore()
+  const { user } = useUserStore()
+  const { currentWeek, currentPhase } = useLessonStore()
+  const lesson = PHASE_TODAY_LESSONS[currentPhase]
+  const lessonId = `${currentPhase}-week-${currentWeek}-today`
 
   const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
   const [completedSections, setCompletedSections] = useState<Set<TabKey>>(new Set())
   const [lessonDone, setLessonDone] = useState(false)
+  const [quizPassed, setQuizPassed] = useState(false)
+  const [completionChecked, setCompletionChecked] = useState(false)
+  const [savingCompletion, setSavingCompletion] = useState(false)
+  const [earnedLessonXP, setEarnedLessonXP] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!user) {
+      setCompletionChecked(true)
+      return () => { cancelled = true }
+    }
+
+    setCompletionChecked(false)
+    void db.completedLessons
+      .get(getCompletedLessonKey(user.id, lessonId))
+      .then((record) => {
+        if (!cancelled && record) setLessonDone(true)
+      })
+      .finally(() => {
+        if (!cancelled) setCompletionChecked(true)
+      })
+
+    return () => { cancelled = true }
+  }, [lessonId, user])
 
   // Tab được mở khóa theo thứ tự
   const getTabUnlocked = (tabKey: TabKey): boolean => {
@@ -493,6 +729,7 @@ export default function TodayLesson() {
   }
 
   const handleCompleteSection = (section: TabKey) => {
+    if (section === 'practice' && !quizPassed) return
     setCompletedSections((prev) => {
       const next = new Set(prev)
       next.add(section)
@@ -507,10 +744,22 @@ export default function TodayLesson() {
   }
 
   const allDone = completedSections.size === 4
+  const canCompleteActiveTab = activeTab !== 'practice' || quizPassed
 
-  const handleCompleteLesson = () => {
-    addXP(100)
-    setLessonDone(true)
+  const handleCompleteLesson = async () => {
+    if (!user || savingCompletion) return
+
+    setSavingCompletion(true)
+    try {
+      const completedNow = await completeLessonOnce(user.id, lessonId)
+      if (completedNow) {
+        addXP(100)
+        setEarnedLessonXP(true)
+      }
+      setLessonDone(true)
+    } finally {
+      setSavingCompletion(false)
+    }
   }
 
   // Màn hình hoàn thành
@@ -526,7 +775,7 @@ export default function TodayLesson() {
         </p>
         <div className="flex items-center gap-2 text-2xl font-black text-amber-400 mb-8">
           <Zap className="w-7 h-7" />
-          +100 XP
+          {earnedLessonXP ? '+100 XP' : 'Đã ghi nhận'}
         </div>
         <button
           onClick={() => navigate('/')}
@@ -552,6 +801,7 @@ export default function TodayLesson() {
           <div>
             <p className="text-xs text-gray-400 font-semibold">TUẦN {currentWeek}</p>
             <h1 className="text-lg font-black text-white leading-tight">Bài học hôm nay</h1>
+            <p className="mt-0.5 text-xs text-indigo-300">{lesson.levelLabel} · {lesson.title}</p>
           </div>
           <div className="ml-auto flex items-center gap-2 text-amber-400">
             <Zap className="w-4 h-4" />
@@ -644,25 +894,26 @@ export default function TodayLesson() {
       {/* ── Tab content ── */}
       <div className="px-5 pt-5">
         {activeTab === 'vocabulary' && (
-          <VocabTab isUnlocked={getTabUnlocked('vocabulary')} />
+          <VocabTab isUnlocked={getTabUnlocked('vocabulary')} lesson={lesson} />
         )}
         {activeTab === 'grammar' && (
-          <GrammarTab isUnlocked={getTabUnlocked('grammar')} />
+          <GrammarTab isUnlocked={getTabUnlocked('grammar')} lesson={lesson} />
         )}
         {activeTab === 'listening' && (
-          <ListeningTab isUnlocked={getTabUnlocked('listening')} />
+          <ListeningTab key={currentPhase} isUnlocked={getTabUnlocked('listening')} listening={lesson.listening} />
         )}
         {activeTab === 'practice' && (
-          <PracticeTab isUnlocked={getTabUnlocked('practice')} />
+          <PracticeTab isUnlocked={getTabUnlocked('practice')} exercises={lesson.exercises} onQuizStatusChange={setQuizPassed} />
         )}
 
         {/* Nút hoàn thành section */}
         {!completedSections.has(activeTab) && getTabUnlocked(activeTab) && (
           <button
             onClick={() => handleCompleteSection(activeTab)}
-            className="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            disabled={!canCompleteActiveTab}
+            className="w-full mt-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Hoàn thành phần này
+            {activeTab === 'practice' && !quizPassed ? 'Đạt 70% quiz để hoàn thành' : 'Hoàn thành phần này'}
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
@@ -671,10 +922,11 @@ export default function TodayLesson() {
         {allDone && (
           <button
             onClick={handleCompleteLesson}
+            disabled={!user || !completionChecked || savingCompletion}
             className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-xl shadow-amber-500/30"
           >
             <Award className="w-5 h-5" />
-            Hoàn thành bài học · +100 XP
+            {savingCompletion ? 'Đang lưu kết quả...' : 'Hoàn thành bài học · +100 XP'}
           </button>
         )}
       </div>

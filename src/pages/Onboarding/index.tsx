@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createLocalId } from '@/lib/localId'
 import { createInitialProgress, useLessonStore, useProgressStore, useUserStore } from '@/store'
 import type { LearningPhase, User } from '@/types'
 import { isGoogleOAuthConfigured, signInWithGoogle, type GoogleOAuthProfile } from '@/services/auth/googleOAuth'
@@ -25,7 +26,7 @@ import { isGoogleOAuthConfigured, signInWithGoogle, type GoogleOAuthProfile } fr
 // ========================
 interface PlacementQ {
   id: string
-  skill: 'vocabulary' | 'grammar'
+  skill: 'vocabulary' | 'grammar' | 'reading'
   question: string
   options: string[]
   correct: number
@@ -78,13 +79,137 @@ const PLACEMENT_QUESTIONS: PlacementQ[] = [
     correct: 1,
     level: 'PHASE_3',
   },
+  {
+    id: 'q6',
+    skill: 'vocabulary',
+    question: 'Choose the best greeting for the morning:',
+    options: ['Good night', 'Good morning', 'Goodbye', 'Thank you'],
+    correct: 1,
+    level: 'PHASE_0',
+  },
+  {
+    id: 'q7',
+    skill: 'grammar',
+    question: 'I _____ a student.',
+    options: ['am', 'is', 'are', 'be'],
+    correct: 0,
+    level: 'PHASE_0',
+  },
+  {
+    id: 'q8',
+    skill: 'vocabulary',
+    question: 'Which word means “mua” in English?',
+    options: ['Buy', 'Bring', 'Build', 'Borrow'],
+    correct: 0,
+    level: 'PHASE_1',
+  },
+  {
+    id: 'q9',
+    skill: 'grammar',
+    question: 'There _____ two books on the table.',
+    options: ['is', 'are', 'am', 'be'],
+    correct: 1,
+    level: 'PHASE_1',
+  },
+  {
+    id: 'q10',
+    skill: 'reading',
+    question: 'Read: “Lan works in a bank. She starts work at 8 a.m.” Where does Lan work?',
+    options: ['At a school', 'At a bank', 'At a hospital', 'At a restaurant'],
+    correct: 1,
+    level: 'PHASE_1',
+  },
+  {
+    id: 'q11',
+    skill: 'grammar',
+    question: 'Look! The children _____ in the garden.',
+    options: ['play', 'played', 'are playing', 'have played'],
+    correct: 2,
+    level: 'PHASE_1',
+  },
+  {
+    id: 'q12',
+    skill: 'vocabulary',
+    question: 'A “passport” is most useful when you _____ .',
+    options: ['cook dinner', 'travel abroad', 'go to sleep', 'read a book'],
+    correct: 1,
+    level: 'PHASE_2',
+  },
+  {
+    id: 'q13',
+    skill: 'grammar',
+    question: 'Yesterday, we _____ dinner at home.',
+    options: ['have', 'had', 'has', 'having'],
+    correct: 1,
+    level: 'PHASE_2',
+  },
+  {
+    id: 'q14',
+    skill: 'reading',
+    question: 'Read: “Hi Mai, I am visiting Da Nang next weekend. The hotel is near the beach.” Where is the hotel?',
+    options: ['Near the airport', 'Near the beach', 'Near a school', 'Near Mai’s house'],
+    correct: 1,
+    level: 'PHASE_2',
+  },
+  {
+    id: 'q15',
+    skill: 'grammar',
+    question: 'This exercise is _____ than the last one.',
+    options: ['easy', 'easier', 'easiest', 'more easy'],
+    correct: 1,
+    level: 'PHASE_2',
+  },
+  {
+    id: 'q16',
+    skill: 'vocabulary',
+    question: '“Although” is used to show _____ .',
+    options: ['a contrast', 'a number', 'a question', 'a location'],
+    correct: 0,
+    level: 'PHASE_3',
+  },
+  {
+    id: 'q17',
+    skill: 'grammar',
+    question: 'If it rains tomorrow, we _____ at home.',
+    options: ['stay', 'stayed', 'will stay', 'would stay'],
+    correct: 2,
+    level: 'PHASE_3',
+  },
+  {
+    id: 'q18',
+    skill: 'reading',
+    question: 'Read: “The company introduced flexible hours so staff can begin earlier or later.” Why did the company change its hours?',
+    options: ['To reduce salaries', 'To give staff more choice', 'To close earlier', 'To hire only new staff'],
+    correct: 1,
+    level: 'PHASE_3',
+  },
+  {
+    id: 'q19',
+    skill: 'grammar',
+    question: 'I _____ my keys, so I cannot open the door.',
+    options: ['lose', 'lost', 'have lost', 'was losing'],
+    correct: 2,
+    level: 'PHASE_3',
+  },
+  {
+    id: 'q20',
+    skill: 'vocabulary',
+    question: 'A “reliable” colleague is someone you can _____ .',
+    options: ['depend on', 'argue with', 'ignore', 'avoid'],
+    correct: 0,
+    level: 'PHASE_3',
+  },
 ]
+
+// A deliberate "I don't know" response makes the placement result more
+// trustworthy than forcing learners to guess one of the four answers.
+const I_DONT_KNOW_OPTION = 'Không biết / Chưa học phần này'
 
 // Tính phase đề xuất dựa trên điểm test
 function calcRecommendedPhase(score: number): LearningPhase {
-  if (score <= 1) return 'PHASE_0'
-  if (score <= 2) return 'PHASE_1'
-  if (score <= 3) return 'PHASE_2'
+  if (score <= 4) return 'PHASE_0'
+  if (score <= 9) return 'PHASE_1'
+  if (score <= 14) return 'PHASE_2'
   return 'PHASE_3'
 }
 
@@ -290,6 +415,7 @@ function PlacementTestStep({
 }) {
   const [currentQ, setCurrentQ] = useState(0)
   const question = PLACEMENT_QUESTIONS[currentQ]
+  const options = [...question.options, I_DONT_KNOW_OPTION]
   const isLastQ = currentQ === PLACEMENT_QUESTIONS.length - 1
   const hasAnswered = answers[question.id] !== undefined
 
@@ -307,7 +433,11 @@ function PlacementTestStep({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
-            {question.skill === 'vocabulary' ? '📖 Từ vựng' : '⚡ Ngữ pháp'}
+            {question.skill === 'vocabulary'
+              ? '📖 Từ vựng'
+              : question.skill === 'grammar'
+                ? '⚡ Ngữ pháp'
+                : '📄 Đọc hiểu'}
           </p>
           <span className="text-xs text-gray-400">
             {currentQ + 1}/{PLACEMENT_QUESTIONS.length}
@@ -332,9 +462,9 @@ function PlacementTestStep({
         <h3 className="text-base font-bold text-white leading-snug">{question.question}</h3>
       </div>
 
-      {/* Options A B C D */}
+      {/* Options A–D plus an explicit non-guessing answer. Index 4 is never correct. */}
       <div className="space-y-3 flex-1">
-        {question.options.map((opt, oi) => {
+        {options.map((opt, oi) => {
           const isSelected = answers[question.id] === oi
           return (
             <button
@@ -356,6 +486,10 @@ function PlacementTestStep({
           )
         })}
       </div>
+
+      <p className="mt-3 text-center text-xs text-gray-500">
+        Chọn E nếu chưa biết — câu này sẽ không được tính đúng.
+      </p>
 
       {/* Navigation */}
       <div className="flex gap-3 mt-6">
@@ -540,7 +674,7 @@ export default function Onboarding() {
   // Lưu user và điều hướng về Dashboard
   const handleStart = () => {
     const newUser: User = {
-      id: googleProfile?.id ?? crypto.randomUUID(),
+      id: googleProfile?.id ?? createLocalId(),
       name: name.trim() || googleProfile?.name || 'Bạn',
       email: googleProfile?.email,
       avatar: googleProfile?.avatar ?? avatar,

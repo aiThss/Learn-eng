@@ -226,7 +226,7 @@ function LessonCard({ lesson, isActive, isCompleted, onClick }: LessonCardProps)
 // TRANG CHÍNH
 // ========================
 export default function GrammarPage() {
-  const { updateTodayActivity } = useProgressStore()
+  const { todayActivity, updateTodayActivity } = useProgressStore()
 
   const [selectedLessonId, setSelectedLessonId] = useState<string>(GRAMMAR_LESSONS[0].id)
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set())
@@ -283,7 +283,7 @@ export default function GrammarPage() {
   // Đánh dấu hoàn thành bài học
   const handleMarkDone = () => {
     setCompletedLessons(prev => new Set([...prev, lesson.id]))
-    updateTodayActivity({ grammarLessons: 1 })
+    updateTodayActivity({ grammarLessons: (todayActivity?.grammarLessons ?? 0) + 1 })
 
     // Chuyển sang bài tiếp theo
     const currentIdx = GRAMMAR_LESSONS.findIndex(l => l.id === lesson.id)

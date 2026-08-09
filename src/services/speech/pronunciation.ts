@@ -1,4 +1,4 @@
-import { speak } from './tts'
+import { isSpeechSynthesisSupported, speak } from './tts'
 
 const FREE_DICTIONARY_ENDPOINT = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
 const audioCache = new Map<string, string | null>()
@@ -34,19 +34,21 @@ async function getDictionaryAudio(word: string): Promise<string | null> {
   }
 }
 
-/** Plays a free dictionary recording when available, then uses device TTS. */
+/** Uses unlimited device speech first; dictionary audio is a browser-support fallback. */
 export async function playPronunciation(word: string): Promise<void> {
-  const audioUrl = await getDictionaryAudio(word)
-  if (!audioUrl) {
+  if (isSpeechSynthesisSupported()) {
     speak(word)
     return
   }
 
+  const audioUrl = await getDictionaryAudio(word)
+  if (!audioUrl) {
+    return
+  }
+
   const audio = new Audio(audioUrl)
-  audio.addEventListener('error', () => speak(word), { once: true })
+  audio.addEventListener('error', () => undefined, { once: true })
   try {
     await audio.play()
-  } catch {
-    speak(word)
-  }
+  } catch { /* Device does not expose a speech service or audio player. */ }
 }
