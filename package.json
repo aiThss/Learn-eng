@@ -1,7 +1,7 @@
 {
   "name": "englishup",
   "private": true,
-  "version": "2.0.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "Ứng dụng học tiếng Anh thông minh từ A0 đến B1",
   "scripts": {

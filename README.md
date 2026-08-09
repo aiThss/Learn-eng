@@ -1,11 +1,11 @@
 # 🚀 EnglishUp - Học Tiếng Anh Thông Minh từ A0 đến B1
 
 <p justify="center">
-  <a href="https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v2.0.0.apk">
-    <img src="https://img.shields.io/badge/📥%20Download-Android%20APK%20v2.0.0-brightgreen.svg?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+  <a href="https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.1.apk">
+    <img src="https://img.shields.io/badge/📥%20Download-Android%20APK%20v0.0.1-brightgreen.svg?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
   <a href="https://github.com/aiThss/Learn-eng/tree/main/releases">
-    <img src="https://img.shields.io/badge/Version-v2.0.0-blue.svg?style=for-the-badge" alt="Version v2.0.0" />
+    <img src="https://img.shields.io/badge/Version-v0.0.1-blue.svg?style=for-the-badge" alt="Version v0.0.1" />
   </a>
   <img src="https://img.shields.io/badge/Platform-PWA%20%7C%20Android-orange.svg?style=for-the-badge" alt="Platform PWA Android" />
   <img src="https://img.shields.io/badge/AI-Gemini%203.1%20Flash--Lite-purple.svg?style=for-the-badge" alt="Gemini AI" />
@@ -18,19 +18,19 @@
 
 Nhấn vào nút bên dưới để tải trực tiếp file APK về điện thoại Android của bạn:
 
-👉 [**📥 Tải EnglishUp v2.0.0 APK**](https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v2.0.0.apk)
+👉 [**📥 Tải EnglishUp v0.0.1 APK**](https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.1.apk)
 
 Hoặc mở trang **Tải Android** trong ứng dụng để quét mã QR. Mã QR chỉ trỏ đến repository GitHub chính thức; luôn đối chiếu SHA-256 trong tệp `.sha256` trước khi cài đặt.
 
-SHA-256 của `EnglishUp-v2.0.0.apk`: `46819F5E7E14D3CEB5BEE07851F7AF44D624123C462CC07DDB66ED791D8411A7`
+SHA-256 của `EnglishUp-v0.0.1.apk`: `47DB25C98CC557A768C60716EF2BBFBF374B094F627F3445406C737E288F8E30`
 
 ### 🛠️ Hướng dẫn cài đặt trên Android:
-1. Nhấn đường link trên để tải file `EnglishUp-v2.0.0.apk`.
+1. Nhấn đường link trên để tải file `EnglishUp-v0.0.1.apk`.
 2. Mở file vừa tải về và chọn **Cài đặt** (Install).
 3. Nếu thiết bị thông báo "Ứng dụng từ nguồn không xác định", hãy chọn **Cho phép từ nguồn này** (Allow from this source).
 4. Mở app **EnglishUp** và bắt đầu trải nghiệm!
 
-> EnglishUp v2.0.0 dùng cùng certificate với v0.0.1, nên có thể cài đè để cập nhật và giữ dữ liệu học. Các bản dùng certificate cũ hơn cần được gỡ trước khi cài.
+> EnglishUp v0.0.1 bản mới dùng cùng certificate với bản v0.0.1 trước đó, nên có thể cài đè để cập nhật và giữ dữ liệu học. Các bản dùng certificate cũ hơn cần được gỡ trước khi cài.
 
 ---
 
