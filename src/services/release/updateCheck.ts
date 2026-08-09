@@ -9,6 +9,11 @@ export interface ReleaseManifest {
   publishedAt: string
 }
 
+export type ReleaseCheckResult =
+  | { status: 'available'; release: ReleaseManifest }
+  | { status: 'up-to-date'; release: ReleaseManifest }
+  | { status: 'unavailable' }
+
 const REQUEST_TIMEOUT_MS = 6_000
 
 function isTrustedDownloadUrl(value: unknown): value is string {
@@ -43,7 +48,7 @@ function isReleaseManifest(value: unknown): value is ReleaseManifest {
  * Kiểm tra metadata phát hành có timeout ngắn. Mọi lỗi mạng đều im lặng để
  * việc mở bài học offline không bị chặn hay hiện thông báo lỗi không cần thiết.
  */
-export async function checkForAppUpdate(): Promise<ReleaseManifest | null> {
+export async function getReleaseCheckResult(): Promise<ReleaseCheckResult> {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
@@ -53,15 +58,23 @@ export async function checkForAppUpdate(): Promise<ReleaseManifest | null> {
       signal: controller.signal,
     })
 
-    if (!response.ok) return null
+    if (!response.ok) return { status: 'unavailable' }
 
     const manifest: unknown = await response.json()
-    if (!isReleaseManifest(manifest)) return null
+    if (!isReleaseManifest(manifest)) return { status: 'unavailable' }
 
-    return manifest.versionCode > APP_RELEASE.versionCode ? manifest : null
+    return manifest.versionCode > APP_RELEASE.versionCode
+      ? { status: 'available', release: manifest }
+      : { status: 'up-to-date', release: manifest }
   } catch {
-    return null
+    return { status: 'unavailable' }
   } finally {
     window.clearTimeout(timeoutId)
   }
+}
+
+/** Backwards-compatible lightweight check used by the startup prompt. */
+export async function checkForAppUpdate(): Promise<ReleaseManifest | null> {
+  const result = await getReleaseCheckResult()
+  return result.status === 'available' ? result.release : null
 }

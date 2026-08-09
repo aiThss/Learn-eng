@@ -20,6 +20,8 @@ import type {
 interface UserStore {
   user: User | null
   isOnboarded: boolean
+  hasHydrated: boolean
+  setHasHydrated: () => void
   
   setUser: (user: User) => void
   updateUser: (updates: Partial<User>) => void
@@ -32,6 +34,8 @@ export const useUserStore = create<UserStore>()(
     (set) => ({
       user: null,
       isOnboarded: false,
+      hasHydrated: false,
+      setHasHydrated: () => set({ hasHydrated: true }),
       
       setUser: (user) => set({ user }),
       
@@ -48,6 +52,13 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'englishup-user',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        user: state.user,
+        isOnboarded: state.isOnboarded,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated()
+      },
     }
   )
 )
@@ -121,6 +132,7 @@ interface ProgressStore {
   todayActivity: DailyActivity | null
   
   setProgress: (progress: UserProgress) => void
+  clearProgress: () => void
   addXP: (xp: number) => void
   updateStreak: (lastDate: Date) => void
   updateTodayActivity: (updates: Partial<DailyActivity>) => void
@@ -134,6 +146,7 @@ export const useProgressStore = create<ProgressStore>()(
       todayActivity: null,
       
       setProgress: (progress) => set({ progress }),
+      clearProgress: () => set({ progress: null, todayActivity: null }),
       
       addXP: (xp) =>
         set((state) => ({

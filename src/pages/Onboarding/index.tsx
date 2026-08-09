@@ -13,10 +13,12 @@ import {
   Target,
   Clock,
   Star,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createInitialProgress, useLessonStore, useProgressStore, useUserStore } from '@/store'
 import type { LearningPhase, User } from '@/types'
+import { isGoogleOAuthConfigured, signInWithGoogle, type GoogleOAuthProfile } from '@/services/auth/googleOAuth'
 
 // ========================
 // Câu hỏi placement test
@@ -105,7 +107,19 @@ const AVATAR_EMOJIS = ['😊', '🧑‍🎓', '👩‍💻', '🦊', '🐼', '�
 // ========================
 // Step 1: Chào mừng
 // ========================
-function WelcomeStep({ onNext }: { onNext: () => void }) {
+function WelcomeStep({
+  onNext,
+  onGoogleLogin,
+  googleAvailable,
+  isGoogleLoading,
+  googleError,
+}: {
+  onNext: () => void
+  onGoogleLogin: () => void
+  googleAvailable: boolean
+  isGoogleLoading: boolean
+  googleError: string | null
+}) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-8 text-center">
       {/* Logo */}
@@ -151,7 +165,21 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         Bắt đầu
         <ChevronRight className="w-5 h-5" />
       </button>
-      <p className="text-xs text-gray-600 mt-3">Miễn phí · Không cần đăng ký</p>
+
+      {googleAvailable ? (
+        <button
+          type="button"
+          onClick={onGoogleLogin}
+          disabled={isGoogleLoading}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-600 bg-white px-4 py-3.5 text-sm font-bold text-gray-800 transition-colors hover:bg-gray-100 disabled:cursor-wait disabled:opacity-60"
+        >
+          {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="text-lg font-black text-[#4285F4]">G</span>}
+          {isGoogleLoading ? 'Đang mở Google…' : 'Đăng nhập với Google'}
+        </button>
+      ) : (
+        <p className="text-xs text-gray-600 mt-3">Miễn phí · Không cần đăng ký</p>
+      )}
+      {googleError && <p className="mt-2 text-center text-xs text-red-400">{googleError}</p>}
     </div>
   )
 }
@@ -174,6 +202,8 @@ function UserInfoStep({
   onNext: () => void
   onBack: () => void
 }) {
+  const avatarIsImage = /^https?:\/\//.test(avatar)
+
   return (
     <div className="flex flex-col flex-1 px-5">
       <h2 className="text-2xl font-black text-white mb-1">Giới thiệu bản thân</h2>
@@ -182,7 +212,7 @@ function UserInfoStep({
       {/* Avatar lớn hiện tại */}
       <div className="flex justify-center mb-6">
         <div className="w-24 h-24 rounded-3xl bg-gray-800 border-2 border-indigo-500/50 flex items-center justify-center text-5xl shadow-lg">
-          {avatar}
+          {avatarIsImage ? <img src={avatar} alt="Google profile" className="h-full w-full rounded-3xl object-cover" /> : avatar}
         </div>
       </div>
 
@@ -476,6 +506,9 @@ export default function Onboarding() {
   const [avatar, setAvatar] = useState('😊')
   const [testAnswers, setTestAnswers] = useState<Record<string, number>>({})
   const [dailyGoal, setDailyGoal] = useState(15)
+  const [googleProfile, setGoogleProfile] = useState<GoogleOAuthProfile | null>(null)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [googleError, setGoogleError] = useState<string | null>(null)
 
   // Tính điểm test
   const testScore = PLACEMENT_QUESTIONS.filter(
@@ -488,12 +521,30 @@ export default function Onboarding() {
     setTestAnswers((prev) => ({ ...prev, [id]: idx }))
   }
 
+  const handleGoogleLogin = async () => {
+    setGoogleError(null)
+    setIsGoogleLoading(true)
+    try {
+      const profile = await signInWithGoogle()
+      setGoogleProfile(profile)
+      setName(profile.name)
+      if (profile.avatar) setAvatar(profile.avatar)
+      setStep(1)
+    } catch (error) {
+      setGoogleError(error instanceof Error ? error.message : 'Không thể đăng nhập Google.')
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
   // Lưu user và điều hướng về Dashboard
   const handleStart = () => {
     const newUser: User = {
-      id: crypto.randomUUID(),
-      name: name.trim() || 'Bạn',
-      avatar,
+      id: googleProfile?.id ?? crypto.randomUUID(),
+      name: name.trim() || googleProfile?.name || 'Bạn',
+      email: googleProfile?.email,
+      avatar: googleProfile?.avatar ?? avatar,
+      authProvider: googleProfile ? 'google' : 'local',
       createdAt: new Date(),
       currentPhase: recommendedPhase,
       currentWeek: 1,
@@ -535,7 +586,15 @@ export default function Onboarding() {
 
       {/* Nội dung từng bước */}
       <div className="flex flex-col flex-1 pb-8">
-        {step === 0 && <WelcomeStep onNext={() => setStep(1)} />}
+        {step === 0 && (
+          <WelcomeStep
+            onNext={() => setStep(1)}
+            onGoogleLogin={() => void handleGoogleLogin()}
+            googleAvailable={isGoogleOAuthConfigured()}
+            isGoogleLoading={isGoogleLoading}
+            googleError={googleError}
+          />
+        )}
         {step === 1 && (
           <UserInfoStep
             name={name}

@@ -3,6 +3,7 @@
  * Quản lý: học tập, AI API key, giao diện, tài khoản
  */
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   User,
   BookOpen,
@@ -26,6 +27,9 @@ import {
   Target,
   Zap,
   Download,
+  LogOut,
+  RefreshCw,
+  Pin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createInitialProgress, useLessonStore, useSettingsStore, useUserStore, useProgressStore } from '@/store'
@@ -33,6 +37,8 @@ import { callAI } from '@/services/ai/gemini'
 import { db } from '@/services/db/schema'
 import { syncDailyStudyReminder } from '@/services/notifications/dailyReminder'
 import { APP_RELEASE } from '@/config/release'
+import { DEV_LOCAL_URL, showDevLocalPin } from '@/config/devLocal'
+import { getReleaseCheckResult, type ReleaseManifest } from '@/services/release/updateCheck'
 
 // ========================
 // Helper: Section header
@@ -154,6 +160,30 @@ function ConfirmDialog({
   )
 }
 
+function SignOutDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-3xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20">
+          <LogOut className="h-7 w-7 text-amber-400" />
+        </div>
+        <h3 className="mb-2 text-center text-lg font-black text-white">Đăng xuất tài khoản?</h3>
+        <p className="mb-6 text-center text-sm leading-relaxed text-gray-400">
+          Bạn sẽ quay về màn hình đăng nhập để chọn người học khác. Dữ liệu học của tài khoản hiện tại vẫn được giữ riêng trên thiết bị.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 rounded-xl bg-gray-800 py-3 text-sm font-semibold text-gray-300 hover:bg-gray-700">
+            Hủy
+          </button>
+          <button onClick={onConfirm} className="flex-1 rounded-xl bg-amber-500 py-3 text-sm font-semibold text-gray-950 hover:bg-amber-400">
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ========================
 // Toast thông báo
 // ========================
@@ -180,9 +210,10 @@ function Toast({ message, type = 'success' }: { message: string; type?: 'success
 // Trang chính Settings
 // ========================
 export default function Settings() {
+  const navigate = useNavigate()
   const { settings, updateSettings, setApiKey } = useSettingsStore()
-  const { user, updateUser } = useUserStore()
-  const { setProgress } = useProgressStore()
+  const { user, updateUser, clearUser } = useUserStore()
+  const { setProgress, clearProgress } = useProgressStore()
   const { setSRSCards, setPhase, setWeek } = useLessonStore()
 
   // Local state
@@ -191,9 +222,12 @@ export default function Settings() {
   const [testingApi, setTestingApi] = useState(false)
   const [apiTestResult, setApiTestResult] = useState<'idle' | 'success' | 'error'>('idle')
   const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [saved, setSaved] = useState(false)
   const [updatingReminder, setUpdatingReminder] = useState(false)
+  const [checkingRelease, setCheckingRelease] = useState(false)
+  const [availableRelease, setAvailableRelease] = useState<ReleaseManifest | null>(null)
 
   // Đồng bộ API key input
   useEffect(() => {
@@ -315,6 +349,36 @@ export default function Settings() {
     setPhase(user?.currentPhase ?? 'PHASE_0')
     setWeek(1)
     showToast('Đã reset tiến trình học tập')
+  }
+
+  const handleSignOut = () => {
+    setShowSignOutDialog(false)
+    clearUser()
+    clearProgress()
+    setSRSCards([])
+    setPhase('PHASE_0')
+    setWeek(1)
+    navigate('/onboarding', { replace: true })
+  }
+
+  const handleCheckForApk = async () => {
+    setCheckingRelease(true)
+    setAvailableRelease(null)
+    const result = await getReleaseCheckResult()
+    setCheckingRelease(false)
+
+    if (result.status === 'available') {
+      setAvailableRelease(result.release)
+      showToast(`Đã tìm thấy APK v${result.release.version}`)
+      return
+    }
+
+    if (result.status === 'up-to-date') {
+      showToast(`Bạn đang dùng APK mới nhất (v${APP_RELEASE.version})`)
+      return
+    }
+
+    showToast('Chưa thể kết nối nguồn cập nhật APK', 'error')
   }
 
   // Format ngày tham gia
@@ -613,6 +677,26 @@ export default function Settings() {
             <SectionHeader icon={Shield} title="Tài khoản" />
           </div>
 
+          <SettingRow
+            label="Phương thức đăng nhập"
+            sublabel={user?.authProvider === 'google' ? (user.email || 'Google OAuth') : 'Hồ sơ cục bộ trên thiết bị'}
+          >
+            <span className="rounded-full bg-indigo-500/15 px-2 py-1 text-xs font-semibold text-indigo-300">
+              {user?.authProvider === 'google' ? 'Google' : 'Cục bộ'}
+            </span>
+          </SettingRow>
+
+          <SettingRow
+            label="Đăng xuất / đổi người học"
+            sublabel="Đăng nhập hoặc tạo hồ sơ cho người khác"
+            onClick={() => setShowSignOutDialog(true)}
+          >
+            <div className="flex items-center gap-1.5 text-amber-400">
+              <LogOut className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          </SettingRow>
+
           {/* Reset progress */}
           <SettingRow
             label="Reset tiến trình"
@@ -629,6 +713,29 @@ export default function Settings() {
           <SettingRow label="Phiên bản ứng dụng" sublabel="EnglishUp">
             <span className="text-sm text-gray-500 font-mono">v{APP_RELEASE.version}</span>
           </SettingRow>
+          <button
+            type="button"
+            onClick={() => void handleCheckForApk()}
+            disabled={checkingRelease}
+            className="flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-gray-700/20 active:bg-gray-700/30 disabled:cursor-wait disabled:opacity-60"
+          >
+            <div>
+              <p className="text-sm font-medium text-white">Quét APK mới</p>
+              <p className="mt-0.5 text-xs text-gray-500">Kiểm tra bản cập nhật chính thức trên GitHub</p>
+            </div>
+            {checkingRelease ? <Loader2 className="h-4 w-4 animate-spin text-indigo-400" /> : <RefreshCw className="h-4 w-4 text-indigo-400" />}
+          </button>
+          {availableRelease && (
+            <a
+              href={availableRelease.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-4 mb-3 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5"
+            >
+              <span className="text-xs font-semibold text-emerald-300">APK v{availableRelease.version} sẵn sàng tải</span>
+              <Download className="h-4 w-4 text-emerald-300" />
+            </a>
+          )}
           <a
             href="/download"
             className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-gray-700/20 active:bg-gray-700/30"
@@ -640,6 +747,26 @@ export default function Settings() {
             <Download className="h-4 w-4 text-indigo-400" />
           </a>
         </div>
+
+        {showDevLocalPin && (
+          <div className="overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-950/20">
+            <div className="px-4 pb-2 pt-4">
+              <SectionHeader icon={Pin} title="Dev Local" />
+            </div>
+            <a
+              href={DEV_LOCAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-amber-500/10"
+            >
+              <div>
+                <p className="text-sm font-medium text-white">Mở bản đang chạy trong mạng Wi-Fi</p>
+                <p className="mt-0.5 break-all text-xs text-amber-200/60">{DEV_LOCAL_URL}</p>
+              </div>
+              <ExternalLink className="h-4 w-4 shrink-0 text-amber-300" />
+            </a>
+          </div>
+        )}
 
         {/* ── Nút Lưu ── */}
         <button
@@ -668,6 +795,13 @@ export default function Settings() {
         <ConfirmDialog
           onConfirm={handleReset}
           onCancel={() => setShowResetDialog(false)}
+        />
+      )}
+
+      {showSignOutDialog && (
+        <SignOutDialog
+          onConfirm={handleSignOut}
+          onCancel={() => setShowSignOutDialog(false)}
         />
       )}
 

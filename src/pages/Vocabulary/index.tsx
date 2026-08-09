@@ -3,13 +3,14 @@
  * Hỗ trợ lật thẻ 3D, đánh giá chất lượng, chế độ danh sách/thẻ
  */
 import { useState, useCallback, useEffect } from 'react'
-import { BookOpen, List, LayoutGrid, ChevronLeft, ChevronRight, Star, TrendingUp, Clock, CheckCircle2, XCircle, Minus } from 'lucide-react'
+import { BookOpen, List, LayoutGrid, ChevronLeft, ChevronRight, Star, TrendingUp, Clock, CheckCircle2, XCircle, Minus, Volume2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useLessonStore, useProgressStore, useUserStore } from '@/store'
+import { useLessonStore, useProgressStore, useSettingsStore, useUserStore } from '@/store'
 import type { SRSCard, VocabWord } from '@/types'
 import { cn } from '@/lib/utils'
 import { db, seedVocabularyData } from '@/services/db/schema'
 import { calculateSM2, createNewSRSCard } from '@/services/srs/sm2'
+import { playPronunciation } from '@/services/speech/pronunciation'
 
 // ========================
 // DỮ LIỆU MẪU PHASE 0
@@ -196,6 +197,7 @@ function WordListItem({ word, rating }: WordListItemProps) {
 export default function VocabularyPage() {
   const { progress, incrementVocab, addXP } = useProgressStore()
   const { user } = useUserStore()
+  const { settings } = useSettingsStore()
   const { setSRSCards } = useLessonStore()
 
   const [viewMode, setViewMode] = useState<ViewMode>('card')
@@ -475,12 +477,24 @@ export default function VocabularyPage() {
                         <ChevronLeft className="h-4 w-4" />
                         Trước
                       </button>
-                      <button
-                        onClick={handleFlip}
-                        className="min-h-12 rounded-[1rem] bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        Xem nghĩa
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => settings.soundEnabled && void playPronunciation(currentWord.word)}
+                          disabled={!settings.soundEnabled}
+                          className="flex h-12 w-12 items-center justify-center rounded-[1rem] border border-primary/30 bg-primary/10 text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label={`Nghe phát âm ${currentWord.word}`}
+                          title={settings.soundEnabled ? 'Nghe phát âm' : 'Âm thanh đang tắt trong Cài đặt'}
+                        >
+                          <Volume2 className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={handleFlip}
+                          className="min-h-12 rounded-[1rem] bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          Xem nghĩa
+                        </button>
+                      </div>
                       <button
                         onClick={handleNext}
                         disabled={cardState.index === filteredWords.length - 1}

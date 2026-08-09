@@ -2,7 +2,7 @@
  * TodayLesson - Trang bài học hôm nay
  * Bao gồm 4 tab: Từ vựng, Ngữ pháp, Nghe, Luyện tập
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   BookOpen,
@@ -220,6 +220,9 @@ function GrammarTab({ isUnlocked }: { isUnlocked: boolean }) {
 /** Listening tab */
 function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
   const [playing, setPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [audioDuration, setAudioDuration] = useState(38)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({})
 
   if (!isUnlocked) return <LockedTab />
@@ -236,32 +239,59 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
       correct: 1,
     },
   ]
+  const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`
 
   return (
     <div className="space-y-5">
       {/* Audio player */}
       <div className="bg-gradient-to-br from-teal-900/40 to-cyan-900/20 border border-teal-500/30 rounded-2xl p-5">
         <p className="text-xs font-bold text-teal-400 uppercase tracking-wider mb-1">
-          Audio · 2 phút 30 giây
+          Audio · {formatTime(audioDuration)}
         </p>
         <h3 className="text-base font-black text-white mb-4">
           "My Daily Study Routine"
         </h3>
 
-        {/* Thanh audio giả */}
+        <audio
+          ref={audioRef}
+          src="/audio/daily-study-routine.mp3"
+          preload="metadata"
+          onLoadedMetadata={() => {
+            const duration = audioRef.current?.duration
+            if (duration && Number.isFinite(duration)) setAudioDuration(duration)
+          }}
+          onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+          onEnded={() => {
+            setPlaying(false)
+            setCurrentTime(0)
+          }}
+          onError={() => setPlaying(false)}
+        />
+
         <div className="h-1.5 bg-gray-700/60 rounded-full mb-4 overflow-hidden">
           <div
-            className={cn(
-              'h-full bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-300',
-              playing ? 'w-1/3' : 'w-0'
-            )}
+            className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-300"
+            style={{ width: `${Math.min((currentTime / audioDuration) * 100, 100)}%` }}
           />
         </div>
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-4">
           <button
-            onClick={() => setPlaying(!playing)}
+            onClick={async () => {
+              if (!audioRef.current) return
+              if (playing) {
+                audioRef.current.pause()
+                setPlaying(false)
+                return
+              }
+              try {
+                await audioRef.current.play()
+                setPlaying(true)
+              } catch {
+                setPlaying(false)
+              }
+            }}
             className={cn(
               'w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95',
               'bg-gradient-to-br from-teal-500 to-cyan-600 shadow-lg shadow-teal-500/30'
@@ -277,7 +307,7 @@ function ListeningTab({ isUnlocked }: { isUnlocked: boolean }) {
             )}
           </button>
           <div className="text-sm text-gray-400">
-            {playing ? '0:47 / 2:30' : '0:00 / 2:30'}
+            {`${formatTime(currentTime)} / ${formatTime(audioDuration)}`}
           </div>
         </div>
       </div>

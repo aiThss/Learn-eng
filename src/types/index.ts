@@ -11,6 +11,7 @@ export interface User {
   name: string
   email?: string
   avatar?: string
+  authProvider?: 'google' | 'local'
   createdAt: Date
   currentPhase: LearningPhase
   currentWeek: number

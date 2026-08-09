@@ -15,7 +15,7 @@ const LISTENING_EXERCISES: ListeningExercise[] = [
   {
     id: 'l001',
     title: 'Chào hỏi cơ bản',
-    audioUrl: '', // Demo - không có audio thật
+    audioUrl: '/audio/greeting-dialogue.mp3',
     transcript: `A: Hello! How are you today?
 B: Hi! I'm fine, thank you. And you?
 A: I'm good too, thanks! My name is Anna. What's your name?
@@ -55,7 +55,7 @@ A: That's great! Keep practising!`,
   {
     id: 'l002',
     title: 'Gọi đồ ăn tại nhà hàng',
-    audioUrl: '',
+    audioUrl: '/audio/restaurant-dialogue.mp3',
     transcript: `Waiter: Good evening! Welcome to Green Garden Restaurant. 
 Customer: Good evening! A table for two, please.
 Waiter: Of course! Please follow me. Here is your menu.
@@ -116,6 +116,7 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
+  const [mediaDuration, setMediaDuration] = useState(duration)
   const [isDragging, setIsDragging] = useState(false)
 
   // Cập nhật tốc độ phát
@@ -135,18 +136,17 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
   const handlePlayPause = async () => {
     if (!audioRef.current) return
 
-    // Demo mode - không có audio thật nên mô phỏng
-    if (!audioUrl) {
-      setIsPlaying(prev => !prev)
-      return
-    }
-
     if (isPlaying) {
       audioRef.current.pause()
+      setIsPlaying(false)
     } else {
-      await audioRef.current.play()
+      try {
+        await audioRef.current.play()
+        setIsPlaying(true)
+      } catch {
+        setIsPlaying(false)
+      }
     }
-    setIsPlaying(!isPlaying)
   }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,22 +155,6 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
     if (audioRef.current) audioRef.current.currentTime = time
   }
 
-  // Mô phỏng tiến độ trong demo mode
-  useEffect(() => {
-    if (!audioUrl && isPlaying) {
-      const interval = setInterval(() => {
-        setCurrentTime(prev => {
-          if (prev >= duration) {
-            setIsPlaying(false)
-            return 0
-          }
-          return prev + speed
-        })
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [isPlaying, audioUrl, duration, speed])
-
   // Format thời gian mm:ss
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60)
@@ -178,19 +162,25 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+  const progress = mediaDuration > 0 ? (currentTime / mediaDuration) * 100 : 0
 
   return (
     <div className="rounded-2xl bg-gray-800 p-5">
-      {/* Audio element ẩn */}
-      {audioUrl && (
-        <audio
-          ref={audioRef}
-          src={audioUrl}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={() => setIsPlaying(false)}
-        />
-      )}
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        preload="metadata"
+        onLoadedMetadata={() => {
+          const loadedDuration = audioRef.current?.duration
+          if (loadedDuration && Number.isFinite(loadedDuration)) setMediaDuration(loadedDuration)
+        }}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => {
+          setIsPlaying(false)
+          setCurrentTime(0)
+        }}
+        onError={() => setIsPlaying(false)}
+      />
 
       {/* Icon + trạng thái */}
       <div className="mb-4 flex items-center justify-center">
@@ -209,7 +199,7 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
         <input
           type="range"
           min={0}
-          max={duration}
+          max={mediaDuration}
           value={currentTime}
           onChange={handleSeek}
           onMouseDown={() => setIsDragging(true)}
@@ -221,7 +211,7 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
         />
         <div className="mt-1 flex justify-between text-xs text-gray-500">
           <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+          <span>{formatTime(mediaDuration)}</span>
         </div>
       </div>
 
@@ -229,8 +219,13 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
       <div className="flex items-center justify-between">
         {/* Rewind 10s */}
         <button
-          onClick={() => setCurrentTime(prev => Math.max(0, prev - 10))}
+          onClick={() => {
+            const time = Math.max(0, currentTime - 10)
+            setCurrentTime(time)
+            if (audioRef.current) audioRef.current.currentTime = time
+          }}
           className="rounded-lg bg-gray-700 p-2 text-gray-300 transition-colors hover:bg-gray-600"
+          aria-label="Lùi 10 giây"
         >
           <SkipBack className="h-5 w-5" />
         </button>
@@ -239,14 +234,20 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
         <button
           onClick={handlePlayPause}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-900/40 transition-all hover:bg-indigo-700 active:scale-95"
+          aria-label={isPlaying ? 'Tạm dừng' : 'Phát audio'}
         >
           {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="ml-1 h-6 w-6" />}
         </button>
 
         {/* Forward 10s */}
         <button
-          onClick={() => setCurrentTime(prev => Math.min(duration, prev + 10))}
+          onClick={() => {
+            const time = Math.min(mediaDuration, currentTime + 10)
+            setCurrentTime(time)
+            if (audioRef.current) audioRef.current.currentTime = time
+          }}
           className="rounded-lg bg-gray-700 p-2 text-gray-300 transition-colors hover:bg-gray-600"
+          aria-label="Tua 10 giây"
         >
           <SkipForward className="h-5 w-5" />
         </button>
@@ -269,12 +270,9 @@ function AudioPlayer({ audioUrl, duration, speed, onSpeedChange }: AudioPlayerPr
         ))}
       </div>
 
-      {/* Demo notice */}
-      {!audioUrl && (
-        <p className="mt-3 text-center text-xs text-gray-600">
-          * Demo mode - không có audio thật
-        </p>
-      )}
+      <p className="mt-3 text-center text-xs text-gray-500">
+        Audio tiếng Anh đã được đóng gói trong ứng dụng · Phát offline
+      </p>
     </div>
   )
 }
@@ -402,6 +400,7 @@ export default function ListeningPage() {
         <div className="mb-4">
           <h2 className="mb-3 font-semibold text-white">{selectedExercise.title}</h2>
           <AudioPlayer
+            key={selectedExercise.id}
             audioUrl={selectedExercise.audioUrl}
             duration={selectedExercise.duration}
             speed={speed}

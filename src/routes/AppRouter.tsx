@@ -31,7 +31,8 @@ const DownloadPage = lazy(() => import('@/pages/Download'))
  * Guard: Redirect về Onboarding nếu chưa setup
  */
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isOnboarded } = useUserStore()
+  const { isOnboarded, hasHydrated } = useUserStore()
+  if (!hasHydrated) return <LoadingScreen />
   if (!isOnboarded) {
     return <Navigate to="/onboarding" replace />
   }
@@ -42,7 +43,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
  * Guard: Redirect về Dashboard nếu đã onboarded
  */
 function RequireGuest({ children }: { children: React.ReactNode }) {
-  const { isOnboarded } = useUserStore()
+  const { isOnboarded, hasHydrated } = useUserStore()
+  if (!hasHydrated) return <LoadingScreen />
   if (isOnboarded) {
     return <Navigate to="/" replace />
   }
