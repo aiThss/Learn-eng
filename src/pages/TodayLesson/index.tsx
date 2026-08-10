@@ -457,7 +457,7 @@ function ListeningTab({ isUnlocked, listening }: { isUnlocked: boolean; listenin
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-teal-500/15 px-3 py-2.5 text-xs font-bold text-teal-200 ring-1 ring-teal-400/30"
         >
           <Volume2 className="h-4 w-4" />
-          {isDeviceSpeaking ? 'Dừng giọng thiết bị' : 'Đọc chậm bằng Web Speech'}
+          {isDeviceSpeaking ? 'Dừng giọng thiết bị' : 'Đọc chậm bằng giọng thiết bị'}
         </button>
       </div>
 

@@ -1,3 +1,4 @@
+import { supportsNativeTextToSpeech, speakWithNativeTextToSpeech } from './nativeTts'
 import { isSpeechSynthesisSupported, speak } from './tts'
 
 const FREE_DICTIONARY_ENDPOINT = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
@@ -34,8 +35,13 @@ async function getDictionaryAudio(word: string): Promise<string | null> {
   }
 }
 
-/** Uses unlimited device speech first; dictionary audio is a browser-support fallback. */
+/** Uses Android TTS in the APK, then Web Speech and dictionary audio as fallbacks. */
 export async function playPronunciation(word: string): Promise<void> {
+  if (supportsNativeTextToSpeech()) {
+    const completed = await speakWithNativeTextToSpeech(word)
+    if (completed) return
+  }
+
   if (isSpeechSynthesisSupported()) {
     speak(word)
     return

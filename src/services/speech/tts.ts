@@ -1,3 +1,9 @@
+import {
+  stopNativeTextToSpeech,
+  supportsNativeTextToSpeech,
+  speakWithNativeTextToSpeech,
+} from './nativeTts'
+
 /**
  * Text-to-Speech service
  * Dùng Web Speech API để đọc tiếng Anh
@@ -19,6 +25,11 @@ export function speak(
     lang?: string  // 'en-US' | 'en-GB'
   }
 ): void {
+  if (supportsNativeTextToSpeech()) {
+    void speakWithNativeTextToSpeech(text, options)
+    return
+  }
+
   if (!isSpeechSynthesisSupported()) {
     console.warn('Web Speech API không được hỗ trợ trên trình duyệt này')
     return
@@ -51,7 +62,8 @@ export function speak(
  */
 export function stopSpeaking(): void {
   speechRun += 1
-  if ('speechSynthesis' in window) {
+  stopNativeTextToSpeech()
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel()
   }
 }
@@ -136,6 +148,16 @@ function getSsmlSegments(ssml: string): SsmlSegment[] {
  * deliberately local: no Gemini TTS request is made from the Android/PWA app.
  */
 export function speakSsml(ssml: string, onEnd?: () => void): boolean {
+  if (supportsNativeTextToSpeech()) {
+    const text = ssmlToPlainText(ssml)
+    if (!text) return false
+    const run = ++speechRun
+    void speakWithNativeTextToSpeech(text, { rate: 0.9 }).then(() => {
+      if (run === speechRun) onEnd?.()
+    })
+    return true
+  }
+
   if (!isSpeechSynthesisSupported()) return false
 
   const run = ++speechRun

@@ -3,8 +3,8 @@
  * để chỉ hiện lời mời cập nhật khi versionCode trên GitHub mới hơn bản đang dùng.
  */
 export const APP_RELEASE = {
-  version: '0.0.2',
-  versionCode: 5,
+  version: '0.0.3',
+  versionCode: 6,
   updateManifestUrl:
     'https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/latest.json',
 } as const
@@ -12,8 +12,8 @@ export const APP_RELEASE = {
 /** Thông tin bản APK chính thức duy nhất của dòng ký phát hành hiện tại. */
 export const ANDROID_RELEASE = {
   version: APP_RELEASE.version,
-  apkName: 'EnglishUp-v0.0.2.apk',
+  apkName: 'EnglishUp-v0.0.3.apk',
   downloadUrl:
-    'https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.2.apk',
+    'https://raw.githubusercontent.com/aiThss/Learn-eng/main/releases/EnglishUp-v0.0.3.apk',
   releaseUrl: 'https://github.com/aiThss/Learn-eng/tree/main/releases',
 } as const

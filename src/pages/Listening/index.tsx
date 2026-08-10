@@ -374,7 +374,7 @@ export default function ListeningPage() {
                   {isDeviceSpeaking ? 'Dừng giọng thiết bị' : 'Đọc transcript chậm bằng giọng thiết bị'}
                 </button>
                 <p className="mt-2 text-center text-[11px] text-gray-500">
-                  Dùng Web Speech API trên máy · không gọi Gemini TTS
+                  Dùng giọng đọc có sẵn trên thiết bị · không gọi Gemini TTS
                 </p>
               </div>
 
