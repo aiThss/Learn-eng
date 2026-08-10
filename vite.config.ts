@@ -48,9 +48,17 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    // Vite 8's dependency optimizer can otherwise bundle a separate React copy
+    // for Zustand, causing an invalid-hook-call crash in the dev server.
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': resolve(import.meta.dirname, './src'),
     },
+  },
+  optimizeDeps: {
+    // Keep Zustand as source modules so its React import resolves to the same
+    // optimized React instance used by ReactDOM.
+    exclude: ['zustand'],
   },
   server: {
     port: 5173,

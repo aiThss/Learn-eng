@@ -463,24 +463,24 @@ export default function VocabularyPage() {
                           className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#fecaca] bg-[#fef2f2] p-3 transition-colors hover:bg-[#fee2e2] active:scale-[0.98]"
                         >
                           <XCircle className="h-6 w-6 text-destructive" />
-                          <span className="text-sm font-semibold text-foreground">Khó</span>
-                          <span className="text-xs text-muted-foreground">+1 XP</span>
+                          <span className="text-sm font-semibold text-[#991b1b]">Khó</span>
+                          <span className="text-xs text-[#b91c1c]">+1 XP</span>
                         </button>
                         <button
                           onClick={() => handleRate(3)}
                           className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#fde68a] bg-[#fffbeb] p-3 transition-colors hover:bg-[#fef3c7] active:scale-[0.98]"
                         >
                           <Minus className="h-6 w-6 text-warning" />
-                          <span className="text-sm font-semibold text-foreground">Ổn</span>
-                          <span className="text-xs text-muted-foreground">+2 XP</span>
+                          <span className="text-sm font-semibold text-[#854d0e]">Ổn</span>
+                          <span className="text-xs text-[#a16207]">+2 XP</span>
                         </button>
                         <button
                           onClick={() => handleRate(5)}
                           className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-[1.25rem] border border-[#a7f3d0] bg-[#ecfdf5] p-3 transition-colors hover:bg-[#d1fae5] active:scale-[0.98]"
                         >
                           <CheckCircle2 className="h-6 w-6 text-success" />
-                          <span className="text-sm font-semibold text-foreground">Dễ</span>
-                          <span className="text-xs text-muted-foreground">+5 XP</span>
+                          <span className="text-sm font-semibold text-[#065f46]">Dễ</span>
+                          <span className="text-xs text-[#047857]">+5 XP</span>
                         </button>
                       </div>
                     </div>

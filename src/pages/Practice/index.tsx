@@ -487,8 +487,12 @@ export default function Practice() {
                       <Icon className="h-5 w-5" strokeWidth={2} />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground">{cfg.label}</p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{cfg.description}</p>
+                      <p className={cn('font-bold', isSelected ? 'text-[#102a4c]' : 'text-foreground')}>
+                        {cfg.label}
+                      </p>
+                      <p className={cn('mt-0.5 text-sm', isSelected ? 'text-[#365f92]' : 'text-muted-foreground')}>
+                        {cfg.description}
+                      </p>
                     </div>
                   </div>
                   <div
