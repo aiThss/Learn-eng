@@ -2,6 +2,7 @@
  * Dashboard - Trang chính hiển thị tổng quan học tập
  * Chào người dùng, hiển thị tiến độ, streak, và quick links
  */
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Flame,
@@ -22,6 +23,10 @@ import {
 import { cn } from '@/lib/utils'
 import { useUserStore, useProgressStore, useLessonStore } from '@/store'
 import { getGreeting, formatNumber } from '@/lib/utils'
+import { db, getCompletedLessonKey } from '@/services/db/schema'
+
+const TODAY_LESSON_SECTION_COUNT = 4
+const TODAY_LESSON_ESTIMATED_MINUTES = 18
 
 // ========================
 // Sub-components
@@ -137,12 +142,38 @@ export default function Dashboard() {
   const { user } = useUserStore()
   const { progress, todayActivity } = useProgressStore()
   const { dueCardsCount, currentPhase, currentWeek } = useLessonStore()
+  const [completedTodayLessonInDb, setCompletedTodayLessonInDb] = useState(false)
+  const userId = user?.id
+
+  useEffect(() => {
+    let cancelled = false
+    if (!userId) {
+      setCompletedTodayLessonInDb(false)
+      return () => { cancelled = true }
+    }
+
+    const lessonId = `${currentPhase}-week-${currentWeek}-today`
+    void db.completedLessons
+      .get(getCompletedLessonKey(userId, lessonId))
+      .then((record) => {
+        if (!cancelled) setCompletedTodayLessonInDb(Boolean(record))
+      })
+
+    return () => { cancelled = true }
+  }, [currentPhase, currentWeek, userId])
+
+  const recordedLessonSections = Math.min(
+    TODAY_LESSON_SECTION_COUNT,
+    Math.max(0, todayActivity?.todayLessonSectionsCompleted ?? 0)
+  )
+  const todayLessonCompleted = completedTodayLessonInDb || recordedLessonSections === TODAY_LESSON_SECTION_COUNT
+  const todayLessonSections = todayLessonCompleted ? TODAY_LESSON_SECTION_COUNT : recordedLessonSections
+  const todayLessonMinutes = todayActivity?.todayLessonMinutes
+    ?? (completedTodayLessonInDb ? TODAY_LESSON_ESTIMATED_MINUTES : 0)
 
   // Tính % mục tiêu hàng ngày (phút học / mục tiêu)
   const dailyGoal = user?.dailyGoalMinutes ?? 20
-  const minutesToday = todayActivity
-    ? todayActivity.listeningMinutes + todayActivity.speakingMinutes
-    : 0
+  const minutesToday = todayLessonMinutes + (todayActivity?.listeningMinutes ?? 0) + (todayActivity?.speakingMinutes ?? 0)
   const goalPercent = Math.min(100, Math.round((minutesToday / dailyGoal) * 100))
 
   // XP hôm nay
@@ -164,13 +195,15 @@ export default function Dashboard() {
 
   // The dashboard must never create a convincing-looking history from mock data.
   const hasActivityToday = Boolean(
-    todayActivity && (
+    todayLessonSections > 0 || (
+      todayActivity && (
       todayActivity.xpEarned > 0
       || todayActivity.vocabularyNew > 0
       || todayActivity.vocabularyReviewed > 0
       || todayActivity.grammarLessons > 0
       || todayActivity.listeningMinutes > 0
       || todayActivity.speakingMinutes > 0
+      )
     )
   )
   const recentDays = hasActivityToday
@@ -292,7 +325,7 @@ export default function Dashboard() {
                     Bài học ngày {new Date().getDate()}
                   </h3>
                   <p className="text-gray-400 text-sm mt-1">
-                    10 từ mới · 1 ngữ pháp · Luyện nghe
+                    Từ vựng · Ngữ pháp · Nghe · Quiz cuối bài
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
@@ -303,20 +336,25 @@ export default function Dashboard() {
               {/* Tiến độ bài học */}
               <div className="flex items-center gap-3 mt-4">
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-0 bg-primary rounded-full" />
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-700"
+                    style={{ width: `${(todayLessonSections / TODAY_LESSON_SECTION_COUNT) * 100}%` }}
+                  />
                 </div>
-                <span className="text-xs text-gray-400">0/4</span>
+                <span className="text-xs text-gray-400">
+                  {todayLessonSections}/{TODAY_LESSON_SECTION_COUNT}
+                </span>
               </div>
 
               {/* Nút bắt đầu */}
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-1.5 text-sm text-gray-400">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>~20 phút</span>
+                  <span>{todayLessonCompleted ? `Đã ghi nhận ${todayLessonMinutes} phút` : `~${TODAY_LESSON_ESTIMATED_MINUTES} phút`}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm">
                   <Play className="w-4 h-4" />
-                  Bắt đầu
+                  {todayLessonCompleted ? 'Xem kết quả' : todayLessonSections > 0 ? 'Tiếp tục' : 'Bắt đầu'}
                 </div>
               </div>
             </div>

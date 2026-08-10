@@ -184,6 +184,8 @@ export async function updateDailyActivity(
       goalReached: false,
       exercisesCompleted: 0,
       exercisesCorrect: 0,
+      todayLessonSectionsCompleted: 0,
+      todayLessonMinutes: 0,
       ...updates,
     })
   }

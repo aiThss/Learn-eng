@@ -198,6 +198,10 @@ export const useProgressStore = create<ProgressStore>()(
           const grammarDelta = Math.max(0, todayActivity.grammarLessons - previousActivity.grammarLessons)
           const listeningDelta = Math.max(0, todayActivity.listeningMinutes - previousActivity.listeningMinutes)
           const speakingDelta = Math.max(0, todayActivity.speakingMinutes - previousActivity.speakingMinutes)
+          const lessonDelta = Math.max(
+            0,
+            (todayActivity.todayLessonMinutes ?? 0) - (previousActivity.todayLessonMinutes ?? 0)
+          )
 
           return {
             todayActivity,
@@ -207,7 +211,7 @@ export const useProgressStore = create<ProgressStore>()(
                   grammarLessonsCompleted: state.progress.grammarLessonsCompleted + grammarDelta,
                   listeningMinutes: state.progress.listeningMinutes + listeningDelta,
                   speakingMinutes: state.progress.speakingMinutes + speakingDelta,
-                  totalStudyMinutes: state.progress.totalStudyMinutes + listeningDelta + speakingDelta,
+                  totalStudyMinutes: state.progress.totalStudyMinutes + listeningDelta + speakingDelta + lessonDelta,
                 }
               : null,
           }
@@ -373,6 +377,8 @@ function createEmptyDailyActivity(): DailyActivity {
     goalReached: false,
     exercisesCompleted: 0,
     exercisesCorrect: 0,
+    todayLessonSectionsCompleted: 0,
+    todayLessonMinutes: 0,
   }
 }
 

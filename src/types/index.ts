@@ -257,6 +257,10 @@ export interface DailyActivity {
   goalReached: boolean
   exercisesCompleted: number
   exercisesCorrect: number
+  /** Progress from the guided four-part lesson shown on the dashboard. */
+  todayLessonSectionsCompleted: number
+  /** Estimated learning time earned from completed guided lesson sections. */
+  todayLessonMinutes: number
 }
 
 // ========================
